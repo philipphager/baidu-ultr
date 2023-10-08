@@ -22,7 +22,7 @@ def write_svmlight_file(
 def download_model(directory: Path, name: str):
     path = directory / f"{name}.zip"
     url = f"https://huggingface.co/lixsh6/wsdm23_unbiased/resolve/main/pretrain/{name}.zip"
-    wget.download(url, out=path)
+    wget.download(str(url), out=path)
 
     with ZipFile(path, "r") as f:
         f.extractall(directory)
