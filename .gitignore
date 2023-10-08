@@ -1,0 +1,9 @@
+.idea
+
+*.gz
+*.zip
+*.json
+*.bin
+
+.DS_Store
+__pycache__
