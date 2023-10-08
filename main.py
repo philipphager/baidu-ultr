@@ -28,6 +28,7 @@ if __name__ == "__main__":
 
     model = BertModel.from_pretrained(model_path, local_files_only=True)
     model.to(device)
+    torch.compile(model)
 
     out_file.unlink(missing_ok=True)
 
