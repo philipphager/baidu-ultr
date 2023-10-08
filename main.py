@@ -24,7 +24,7 @@ if __name__ == "__main__":
         download_model(model_directory, model)
 
     train_dataset = BaiduDataset(in_file, max_sequence_length)
-    train_loader = DataLoader(train_dataset, batch_size=batch_size, num_workers=1)
+    train_loader = DataLoader(train_dataset, batch_size=batch_size, num_workers=4)
 
     model = BertModel.from_pretrained(model_path, local_files_only=True)
     model.to(device)
