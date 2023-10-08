@@ -5,8 +5,8 @@ from torch.utils.data import DataLoader
 from tqdm import tqdm
 from transformers import BertModel
 
-from baidu_ultr_features.data import BaiduDataset
-from baidu_ultr_features.util import write_svmlight_file, download_model
+from baidu_ultr.data import BaiduDataset
+from baidu_ultr.util import write_svmlight_file, download_model
 
 if __name__ == "__main__":
     in_file = Path("data") / "part-00001.gz"
