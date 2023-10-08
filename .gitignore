@@ -4,6 +4,7 @@
 *.zip
 *.json
 *.bin
+*.txt
 
 .DS_Store
 __pycache__
