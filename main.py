@@ -15,7 +15,7 @@ if __name__ == "__main__":
     model = "base_group2"
     model_directory = Path("models")
 
-    device = torch.device("mps")
+    device = torch.device("cuda:0")
     batch_size = 16
     max_sequence_length = 128
     model_path = model_directory / model
