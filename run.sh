@@ -10,4 +10,7 @@
 #SBATCH --mail-type=BEGIN,END
 #SBATCH --mail-user=p.k.hager@uva.nl
 
+source ${HOME}/.bashrc
+conda activate baidu-ultr
+
 python main.py
