@@ -5,6 +5,7 @@
 *.json
 *.bin
 *.txt
+outputs
 
 .DS_Store
 __pycache__
