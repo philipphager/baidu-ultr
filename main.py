@@ -7,7 +7,7 @@ from tqdm import tqdm
 from transformers import BertModel
 
 from baidu_ultr.data import BaiduTestDataset, BaiduTrainDataset
-from baidu_ultr.util import download_model
+from baidu_ultr.util import download_model, write_svmlight_file
 
 
 @hydra.main(version_base="1.3", config_path="config", config_name="config")
@@ -15,15 +15,25 @@ def main(config):
     device = torch.device("mps")
     model_path = Path(config.model_directory) / config.model
 
+    in_path = Path(config.in_directory) / config.in_file
+    out_file = Path(config.in_file).with_suffix(f".{config.out_format}")
+    out_path = Path(config.out_directory) / out_file
+
+    print(f"Loading: {in_path}")
+    print(f"Output: {out_path}")
+
     if not model_path.exists():
         download_model(config.model_directory, config.model)
 
-    if config.feedback == "click":
-        dataset = BaiduTrainDataset(config.in_path, config.max_sequence_length)
-    elif config.feedback == "rating":
-        dataset = BaiduTestDataset(config.in_path, config.max_sequence_length)
+    if config.in_type == "train":
+        dataset = BaiduTrainDataset(in_path, config.max_sequence_length)
+    elif config.in_type == "test":
+        dataset = BaiduTestDataset(in_path, config.max_sequence_length)
     else:
-        raise ValueError("config.file_type must be train or validation")
+        raise ValueError("config.in_type must be train or test")
+
+    if config.out_format == "svmlight":
+        write = write_svmlight_file
 
     dataset_loader = DataLoader(
         dataset,
@@ -35,8 +45,6 @@ def main(config):
     model.to(device)
     torch.compile(model)
 
-    Path(config.out_path).unlink(missing_ok=True)
-
     for i, batch in tqdm(enumerate(dataset_loader)):
         query_ids, clicks, tokens, attention_mask, token_types = batch
 
@@ -46,6 +54,7 @@ def main(config):
             token_types.to(device),
         )
         features = model_output.pooler_output
+        write(query_ids, features, clicks, out_path)
 
 
 if __name__ == "__main__":

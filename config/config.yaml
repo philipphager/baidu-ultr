@@ -1,8 +1,11 @@
 model: "base_group2"
 model_directory: "models/"
-batch_size: 96
+batch_size: 8
 max_sequence_length: 128
 
-in_path: "data/annotation_data_0522.txt"
-out_path: "output/test.parquet"
-feedback: rating # or ratings of validation / test
+in_directory: "data/"
+in_file: "annotation_data_0522.txt"
+in_type: test # [train, test]
+
+out_directory: "output/"
+out_format: svmlight
