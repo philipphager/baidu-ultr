@@ -73,6 +73,8 @@ class BaiduTrainDataset(IterableDataset):
         self.begin_query_id = split_id * queries_per_split
         self.end_query_id = (split_id + 1) * queries_per_split
 
+        print(f"Split:{split_id}, query_ids: [{self.begin_query_id}, {self.end_query_id})")
+
     def __iter__(self):
         query_id = -1
         query = None
