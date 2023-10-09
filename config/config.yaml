@@ -8,7 +8,7 @@ in_file: "annotation_data_0522.txt"
 in_type: test # [train, test]
 
 out_directory: "output/"
-out_format: parquet
+half_precision: True # Encode features using fp16
 
 defaults:
   - _self_

@@ -7,7 +7,7 @@ from tqdm import tqdm
 from transformers import BertModel
 
 from baidu_ultr.data import BaiduTestDataset, BaiduTrainDataset
-from baidu_ultr.util import download_model, ParquetWriter, SvmLightWriter
+from baidu_ultr.util import download_model, DatasetWriter
 
 
 @hydra.main(version_base="1.3", config_path="config", config_name="config")
@@ -16,8 +16,10 @@ def main(config):
     model_path = Path(config.model_directory) / config.model
 
     in_path = Path(config.in_directory) / config.in_file
-    out_file = Path(config.in_file).with_suffix(f".{config.out_format}")
+    out_file = Path(config.in_file).with_suffix(".safetensors")
     out_path = Path(config.out_directory) / out_file
+
+    writer = DatasetWriter(half_precision=config.half_precision)
 
     print(f"Loading: {in_path}")
     print(f"Output: {out_path}")
@@ -32,13 +34,6 @@ def main(config):
     else:
         raise ValueError("config.in_type must be in ['train', 'test']")
 
-    if config.out_format == "svmlight":
-        writer = SvmLightWriter
-    elif config.out_format == "parquet":
-        writer = ParquetWriter
-    else:
-        raise ValueError("config.out_format must be in ['svmlight', 'parquet']")
-
     dataset_loader = DataLoader(
         dataset,
         batch_size=config.batch_size,
@@ -49,17 +44,18 @@ def main(config):
     model.to(device)
     torch.compile(model)
 
-    with writer(out_path) as out:
-        for i, batch in tqdm(enumerate(dataset_loader)):
-            query_ids, clicks, tokens, attention_mask, token_types = batch
+    for i, batch in tqdm(enumerate(dataset_loader)):
+        query_ids, clicks, tokens, attention_mask, token_types = batch
 
-            model_output = model(
-                tokens.to(device),
-                attention_mask.to(device),
-                token_types.to(device),
-            )
-            features = model_output.pooler_output
-            out.write(query_ids, features, clicks)
+        model_output = model(
+            tokens.to(device),
+            attention_mask.to(device),
+            token_types.to(device),
+        )
+        features = model_output.pooler_output
+        writer.add(query_ids, clicks, features)
+
+    writer.save(out_path)
 
 
 if __name__ == "__main__":
