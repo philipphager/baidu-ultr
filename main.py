@@ -5,25 +5,26 @@ from torch.utils.data import DataLoader
 from tqdm import tqdm
 from transformers import BertModel
 
-from baidu_ultr.data import BaiduDataset
-from baidu_ultr.util import write_svmlight_file, download_model
+from baidu_ultr.data import BaiduTestDataset
+from baidu_ultr.util import download_model
 
 if __name__ == "__main__":
-    in_file = Path("data") / "part-00001.gz"
-    out_file = Path("output") / "part-00001.txt"
+    in_file = Path("data") / "annotation_data_0522.txt"
+    out_file = Path("output") / "test.svm"
 
     model = "base_group2"
     model_directory = Path("models")
 
-    device = torch.device("cuda:0")
-    batch_size = 96
+    device = torch.device("mps")
+    batch_size = 8
     max_sequence_length = 128
     model_path = model_directory / model
 
     if not model_path.exists():
         download_model(model_directory, model)
 
-    train_dataset = BaiduDataset(in_file, max_sequence_length)
+    train_dataset = BaiduTestDataset(in_file, max_sequence_length)
+
     train_loader = DataLoader(
         train_dataset,
         batch_size=batch_size,
@@ -46,6 +47,3 @@ if __name__ == "__main__":
             token_types.to(device),
         )
         features = model_output.pooler_output
-
-        with open(out_file, "ab") as file:
-            write_svmlight_file(query_ids, features, clicks, file)
