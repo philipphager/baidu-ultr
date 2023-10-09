@@ -12,7 +12,7 @@ from baidu_ultr.util import download_model, DatasetWriter
 
 @hydra.main(version_base="1.3", config_path="config", config_name="config")
 def main(config):
-    device = torch.device("mps")
+    device = torch.device("cuda:0")
     model_path = Path(config.model_directory) / config.model
     data_directory = Path(config.data_directory)
     out_directory = Path(config.out_directory)
