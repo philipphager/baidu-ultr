@@ -1,3 +1,8 @@
+defaults:
+  - _self_
+  - override hydra/hydra_logging: disabled
+  - override hydra/job_logging: disabled
+
 model: "base_group2"
 model_directory: "models/"
 batch_size: 96
@@ -9,8 +14,3 @@ in_type: test # [train, test]
 
 out_directory: "output/"
 half_precision: True # Encode features using fp16
-
-defaults:
-  - _self_
-  - override hydra/hydra_logging: disabled
-  - override hydra/job_logging: disabled
