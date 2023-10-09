@@ -7,7 +7,7 @@ from tqdm import tqdm
 from transformers import BertModel
 
 from baidu_ultr.data import BaiduTestDataset, BaiduTrainDataset
-from baidu_ultr.util import download_model, write_svmlight_file
+from baidu_ultr.util import download_model, ParquetWriter, SvmLightWriter
 
 
 @hydra.main(version_base="1.3", config_path="config", config_name="config")
@@ -30,10 +30,14 @@ def main(config):
     elif config.in_type == "test":
         dataset = BaiduTestDataset(in_path, config.max_sequence_length)
     else:
-        raise ValueError("config.in_type must be train or test")
+        raise ValueError("config.in_type must be in ['train', 'test']")
 
     if config.out_format == "svmlight":
-        write = write_svmlight_file
+        writer = SvmLightWriter
+    elif config.out_format == "parquet":
+        writer = ParquetWriter
+    else:
+        raise ValueError("config.out_format must be in ['svmlight', 'parquet']")
 
     dataset_loader = DataLoader(
         dataset,
@@ -45,16 +49,17 @@ def main(config):
     model.to(device)
     torch.compile(model)
 
-    for i, batch in tqdm(enumerate(dataset_loader)):
-        query_ids, clicks, tokens, attention_mask, token_types = batch
+    with writer(out_path) as out:
+        for i, batch in tqdm(enumerate(dataset_loader)):
+            query_ids, clicks, tokens, attention_mask, token_types = batch
 
-        model_output = model(
-            tokens.to(device),
-            attention_mask.to(device),
-            token_types.to(device),
-        )
-        features = model_output.pooler_output
-        write(query_ids, features, clicks, out_path)
+            model_output = model(
+                tokens.to(device),
+                attention_mask.to(device),
+                token_types.to(device),
+            )
+            features = model_output.pooler_output
+            out.write(query_ids, features, clicks)
 
 
 if __name__ == "__main__":
