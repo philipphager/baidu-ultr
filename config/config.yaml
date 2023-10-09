@@ -8,4 +8,9 @@ in_file: "annotation_data_0522.txt"
 in_type: test # [train, test]
 
 out_directory: "output/"
-out_format: svmlight
+out_format: parquet
+
+defaults:
+  - _self_
+  - override hydra/hydra_logging: disabled
+  - override hydra/job_logging: disabled
