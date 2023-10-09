@@ -1,6 +1,6 @@
 model: "base_group2"
 model_directory: "models/"
-batch_size: 16
+batch_size: 96
 max_sequence_length: 128
 
 in_directory: "data/"
