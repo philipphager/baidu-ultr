@@ -1,19 +1,6 @@
-defaults:
-  - override /hydra/launcher: submitit_slurm
-
-hydra:
-  launcher:
-    mem_gb: 32
-    cpus_per_task: 8
-    array_parallelism: 1
-    partition: gpu
-    gres: gpu:1
-    timeout_min: 120
-
-
 model: "base_group2"
 model_directory: "models/"
-batch_size: 96
+batch_size: 128
 max_sequence_length: 128
 
 in_directory: "data/"
