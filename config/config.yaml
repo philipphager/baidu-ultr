@@ -2,10 +2,13 @@ model: "base_group2"
 model_directory: "models/"
 batch_size: 96
 max_sequence_length: 128
-
-in_directory: "data/"
-in_file: "annotation_data_0522.txt"
-in_type: test # [train, test]
-
-out_directory: "output/"
 half_precision: True # Encode features using fp16
+
+data_type: train # [train, val]
+data_directory: "data/"
+out_directory: "output/"
+
+# Parse train files in chunks, the test set is processed in a single part:
+train_part: 1 # Baidu dataset part: 0 - 1999
+train_split_id: 0 # One dataset part typically has 10 splits, each with 65_536 queries
+train_queries_per_split: 65_536

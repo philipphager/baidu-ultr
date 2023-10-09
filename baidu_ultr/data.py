@@ -19,10 +19,10 @@ TOKEN_TYPES = {
 
 
 def preprocess(
-        query: str,
-        title: str,
-        abstract: str,
-        max_tokens: int,
+    query: str,
+    title: str,
+    abstract: str,
+    max_tokens: int,
 ):
     """
     Format BERT model input as:
@@ -62,12 +62,16 @@ def split_idx(text, offset: int = 10):
 
 class BaiduTrainDataset(IterableDataset):
     def __init__(
-            self,
-            path: Path,
-            max_sequence_length: int,
+        self,
+        path: Path,
+        split_id: int,
+        queries_per_split: int,
+        max_sequence_length: int,
     ):
         self.path = path
         self.max_sequence_length = max_sequence_length
+        self.begin_query_id = split_id * queries_per_split
+        self.end_query_id = (split_id + 1) * queries_per_split
 
     def __iter__(self):
         query_id = -1
@@ -83,25 +87,32 @@ class BaiduTrainDataset(IterableDataset):
                     query_id += 1
                     query = columns[1]
                 else:
-                    title = columns[2]
-                    abstract = columns[3]
-                    click = int(columns[5])
+                    # Iterate over dataset until assigned query range is reached:
+                    query_in_split = self.begin_query_id <= query_id < self.end_query_id
 
-                    tokens, attention_mask, token_types = preprocess(
-                        query,
-                        title,
-                        abstract,
-                        self.max_sequence_length,
-                    )
+                    if query_in_split:
+                        title = columns[2]
+                        abstract = columns[3]
+                        click = int(columns[5])
 
-                    yield query_id, click, tokens, attention_mask, token_types
+                        tokens, attention_mask, token_types = preprocess(
+                            query,
+                            title,
+                            abstract,
+                            self.max_sequence_length,
+                        )
+
+                        yield query_id, click, tokens, attention_mask, token_types
+                    elif query_id >= self.end_query_id:
+                        # End of selected split reached, stop iterating
+                        return
 
 
 class BaiduTestDataset(IterableDataset):
     def __init__(
-            self,
-            path: Path,
-            max_sequence_length: int,
+        self,
+        path: Path,
+        max_sequence_length: int,
     ):
         self.path = path
         self.max_sequence_length = max_sequence_length
