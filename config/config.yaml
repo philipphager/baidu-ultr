@@ -9,6 +9,6 @@ data_directory: "data/"
 out_directory: "output/"
 
 # Parse train files in chunks, the test set is processed in a single part:
-train_part: 1 # Baidu dataset part: 0 - 1999
+train_part: 0 # Baidu dataset part: 0 - 1999
 train_split_id: 0 # One dataset part typically has 10 splits, each with 65_536 queries
 train_queries_per_split: 65_536
