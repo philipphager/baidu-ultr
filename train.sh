@@ -14,4 +14,4 @@
 source ${HOME}/.bashrc
 conda activate baidu-ultr
 
-python main.py train_part=1 data_type=train train_split_id=$SLURM_ARRAY_TASK_ID
+python main.py train_part=0 data_type=train train_split_id=$SLURM_ARRAY_TASK_ID
