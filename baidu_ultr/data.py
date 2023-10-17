@@ -4,6 +4,8 @@ from pathlib import Path
 import torch
 from torch.utils.data import IterableDataset
 
+from baidu_ultr.const import TrainColumns, QueryColumns
+
 SPECIAL_TOKENS = {
     "PAD": 0,
     "SEP": 1,
@@ -73,7 +75,9 @@ class BaiduTrainDataset(IterableDataset):
         self.begin_query_id = split_id * queries_per_split
         self.end_query_id = (split_id + 1) * queries_per_split
 
-        print(f"Split:{split_id}, query_ids: [{self.begin_query_id}, {self.end_query_id})")
+        print(
+            f"Split:{split_id}, query_ids: [{self.begin_query_id}, {self.end_query_id})"
+        )
 
     def __iter__(self):
         query_id = -1
@@ -87,15 +91,29 @@ class BaiduTrainDataset(IterableDataset):
                 if is_query:
                     # Create surrogate query_id to reduce memory:
                     query_id += 1
-                    query = columns[1]
+                    query = columns[QueryColumns.QUERY]
                 else:
                     # Iterate over dataset until assigned query range is reached:
                     query_in_split = self.begin_query_id <= query_id < self.end_query_id
 
                     if query_in_split:
-                        title = columns[2]
-                        abstract = columns[3]
-                        click = int(columns[5])
+                        title = columns[TrainColumns.TITLE]
+                        abstract = columns[TrainColumns.ABSTRACT]
+                        media_type = columns[TrainColumns.MULTIMEDIA_TYPE]
+                        media_type = int(media_type) if media_type != b"-" else 0
+                        displayed_time = float(columns[TrainColumns.DISPLAYED_TIME])
+                        slipoff = int(columns[TrainColumns.SLIPOFF_COUNT_AFTER_CLICK])
+                        serp_height = int(columns[TrainColumns.SERP_HEIGHT])
+                        click = int(columns[TrainColumns.CLICK])
+
+                        features = {
+                            "query_id": query_id,
+                            "media_type": media_type,
+                            "displayed_time": displayed_time,
+                            "serp_height": serp_height,
+                            "slipoff_count_after_click": slipoff,
+                            "click": click,
+                        }
 
                         tokens, attention_mask, token_types = preprocess(
                             query,
@@ -104,7 +122,7 @@ class BaiduTrainDataset(IterableDataset):
                             self.max_sequence_length,
                         )
 
-                        yield query_id, click, tokens, attention_mask, token_types
+                        yield features, tokens, attention_mask, token_types
                     elif query_id >= self.end_query_id:
                         # End of selected split reached, stop iterating
                         return

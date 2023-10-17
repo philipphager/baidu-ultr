@@ -55,15 +55,15 @@ def main(config):
     writer = DatasetWriter(half_precision=config.half_precision)
 
     for i, batch in tqdm(enumerate(dataset_loader)):
-        query_ids, clicks, tokens, attention_mask, token_types = batch
+        features, tokens, attention_mask, token_types = batch
 
         model_output = model(
             tokens.to(device),
             attention_mask.to(device),
             token_types.to(device),
         )
-        features = model_output.pooler_output
-        writer.add(query_ids, clicks, features)
+        query_document_embedding = model_output.pooler_output
+        writer.add(features, query_document_embedding)
 
     writer.save(out_directory / out_file)
 
