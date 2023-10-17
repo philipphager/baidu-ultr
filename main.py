@@ -24,7 +24,7 @@ def main(config):
         in_path = data_directory / f"part-{config.train_part:05d}.gz"
         assert in_path.exists(), f"Train dataset not found at: {in_path}"
 
-        out_file = f"part-{config.train_part}_split-{config.train_split_id}.safetensors"
+        out_file = f"part-{config.train_part}_split-{config.train_split_id}.feather"
         dataset = BaiduTrainDataset(
             in_path,
             config.train_split_id,
@@ -33,7 +33,7 @@ def main(config):
         )
     elif config.data_type == "val":
         in_path = data_directory / "annotation_data_0522.txt"
-        out_file = f"validation.safetensors"
+        out_file = f"validation.feather"
 
         dataset = BaiduTestDataset(in_path, config.max_sequence_length)
     else:
