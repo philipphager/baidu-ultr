@@ -1,46 +1,40 @@
+from collections import defaultdict
 from pathlib import Path
 from zipfile import ZipFile
 
+import pandas as pd
 import torch
 import wget
-from safetensors.torch import save_file
 
 
 class DatasetWriter:
     def __init__(
-            self,
-            half_precision: bool = True,
+        self,
+        half_precision: bool = True,
     ):
         self.half_precision = half_precision
-        self.query_ids = []
-        self.labels = []
-        self.features = []
+        self.features = defaultdict(lambda: [])
+        self.embeddings = []
 
-    def add(self, query_ids, labels, features):
+    def add(self, features, query_document_embedding):
         if self.half_precision:
-            # Encode datatypes to reduce memory
-            query_ids = query_ids.to(torch.int)
-            labels = labels.to(torch.short)
-            features = features.to(torch.float16)
+            query_document_embedding = query_document_embedding.to(torch.float16)
 
-        # Ensure tensors are moved out of GPU memory
-        self.query_ids.append(query_ids.cpu().detach())
-        self.labels.append(labels.cpu().detach())
-        self.features.append(features.cpu().detach())
+        self.embeddings.append(query_document_embedding.cpu().detach())
+
+        for k, v in features.items():
+            self.features[k].append(v)
 
     def save(self, path: Path):
-        self.query_ids = torch.concat(self.query_ids)
-        self.labels = torch.concat(self.labels)
-        self.features = torch.vstack(self.features)
+        for k, v in self.features.items():
+            self.features[k] = list(torch.concat(self.features[k]).numpy())
 
-        save_file(
-            {
-                "query_ids": self.query_ids,
-                "labels": self.labels,
-                "features": self.features,
-            },
-            path,
+        self.features["query_document_embeddings"] = list(
+            torch.vstack(self.embeddings).numpy()
         )
+
+        df = pd.DataFrame(self.features)
+        df.to_feather(path)
 
 
 def download_model(directory: Path, name: str):
