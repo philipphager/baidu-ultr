@@ -99,6 +99,7 @@ class BaiduTrainDataset(IterableDataset):
                     if query_in_split:
                         title = columns[TrainColumns.TITLE]
                         abstract = columns[TrainColumns.ABSTRACT]
+                        position = int(columns[TrainColumns.POS])
                         media_type = columns[TrainColumns.MULTIMEDIA_TYPE]
                         media_type = int(media_type) if media_type != b"-" else 0
                         displayed_time = float(columns[TrainColumns.DISPLAYED_TIME])
@@ -108,6 +109,7 @@ class BaiduTrainDataset(IterableDataset):
 
                         features = {
                             "query_id": query_id,
+                            "position": position,
                             "media_type": media_type,
                             "displayed_time": displayed_time,
                             "serp_height": serp_height,

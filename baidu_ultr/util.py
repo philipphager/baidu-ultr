@@ -29,7 +29,7 @@ class DatasetWriter:
         for k, v in self.features.items():
             self.features[k] = list(torch.concat(self.features[k]).numpy())
 
-        self.features["query_document_embeddings"] = list(
+        self.features["query_document_embedding"] = list(
             torch.vstack(self.embeddings).numpy()
         )
 
