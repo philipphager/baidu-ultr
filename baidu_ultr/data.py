@@ -145,11 +145,17 @@ class BaiduTestDataset(IterableDataset):
             for i, line in enumerate(f):
                 columns = line.strip(b"\n").split(b"\t")
 
-                qid, query, title, abstract, label, frequency = columns
+                qid, query, title, abstract, label, frequency_bucket = columns
 
                 if qid != current_query_id:
                     query_id += 1
                     current_query_id = qid
+
+                features = {
+                    "query_id": query_id,
+                    "label": int(label),
+                    "frequency_bucket": int(frequency_bucket),
+                }
 
                 tokens, attention_mask, token_types = preprocess(
                     query,
@@ -158,4 +164,4 @@ class BaiduTestDataset(IterableDataset):
                     self.max_sequence_length,
                 )
 
-                yield query_id, int(label), tokens, attention_mask, token_types
+                yield features, tokens, attention_mask, token_types
