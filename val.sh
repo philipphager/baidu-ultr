@@ -13,4 +13,4 @@
 source ${HOME}/.bashrc
 conda activate baidu-ultr
 
-python main.py +data_type=val
+python main.py data_type=val
