@@ -24,7 +24,7 @@ containing 589,824 queries and 6,271,536 documents.
 _HOMEPAGE = "https://huggingface.co/datasets/philipphager/baidu-ultr-606k/"
 _LICENSE = ""
 _URL = "https://huggingface.co/datasets/philipphager/baidu-ultr-606k/"
-_PARTS = 1
+_PARTS = 4
 _SPLITS = 10
 
 
@@ -46,6 +46,13 @@ class BaiduUltr606K(datasets.GeneratorBasedBuilder):
             version=VERSION,
             description="Load expert annotations from the Baidu ULTR dataset",
         ),
+    ] + [
+        datasets.BuilderConfig(
+            name=f"clicks-{part}",
+            version=VERSION,
+            description="Load clicks from the Baidu ULTR dataset",
+        )
+        for part in range(_PARTS)
     ]
 
     CLICK_FEATURES = datasets.Features(
