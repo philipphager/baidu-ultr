@@ -4,9 +4,10 @@ import hydra
 import torch
 from torch.utils.data import DataLoader
 from tqdm import tqdm
-from transformers import BertModel
 
+from baidu_ultr.const import SEGMENT_TYPES, BAIDU_SPECIAL_TOKENS
 from baidu_ultr.data import BaiduTestDataset, BaiduTrainDataset
+from baidu_ultr.model.tencent import TencentModel
 from baidu_ultr.util import download_model, DatasetWriter
 
 
@@ -30,6 +31,8 @@ def main(config):
             config.train_split_id,
             config.train_queries_per_split,
             config.max_sequence_length,
+            BAIDU_SPECIAL_TOKENS,
+            SEGMENT_TYPES,
         )
     elif config.data_type == "val":
         in_path = data_directory / "annotation_data_0522.txt"
@@ -48,21 +51,18 @@ def main(config):
     print(in_path)
     print(out_file)
 
-    model = BertModel.from_pretrained(model_path, local_files_only=True)
-    model.to(device)
-    torch.compile(model)
+    model = TencentModel(model_path, device)
+    model.load()
 
     writer = DatasetWriter(half_precision=config.half_precision)
 
     for i, batch in tqdm(enumerate(dataset_loader)):
-        features, tokens, attention_mask, token_types = batch
+        features, tokens, token_types = batch
 
-        model_output = model(
-            tokens.to(device),
-            attention_mask.to(device),
-            token_types.to(device),
+        query_document_embedding = model(
+            tokens,
+            token_types,
         )
-        query_document_embedding = model_output.pooler_output
         writer.add(features, query_document_embedding)
 
     writer.save(out_directory / out_file)
