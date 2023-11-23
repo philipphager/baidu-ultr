@@ -1,5 +1,27 @@
 from enum import IntEnum
 
+TOKEN_OFFSET = 10
+
+TENCENT_SPECIAL_TOKENS = {
+    "PAD": 0,
+    "SEP": 1,
+    "CLS": 2,
+    "MASK": 3,
+}
+
+BAIDU_SPECIAL_TOKENS = {
+    "CLS": 0,
+    "SEP": 1,
+    "PAD": 2,
+    "MASK": 3,
+}
+
+SEGMENT_TYPES = {
+    "QUERY": 0,
+    "TEXT": 1,
+    "PAD": 1,  # See source code:
+}
+
 
 class QueryColumns(IntEnum):
     QID = 0

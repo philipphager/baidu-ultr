@@ -1,23 +1,11 @@
 import gzip
 from pathlib import Path
+from typing import Dict
 
 import torch
 from torch.utils.data import IterableDataset
 
-from baidu_ultr.const import TrainColumns, QueryColumns
-
-SPECIAL_TOKENS = {
-    "PAD": 0,
-    "SEP": 1,
-    "CLS": 2,
-    "MASK": 3,
-}
-
-TOKEN_TYPES = {
-    "QUERY": 0,
-    "TEXT": 1,
-    "PAD": 1,  # See source code:
-}
+from baidu_ultr.const import TrainColumns, QueryColumns, TOKEN_OFFSET
 
 
 def preprocess(
@@ -25,37 +13,38 @@ def preprocess(
     title: str,
     abstract: str,
     max_tokens: int,
+    special_token: Dict[str, int],
+    segment_type: Dict[str, int],
 ):
     """
     Format BERT model input as:
     [CLS] + query + [SEP] + title + [SEP] + content + [SEP] + [PAD]
     """
-    query_idx = split_idx(query)
-    title_idx = split_idx(title)
-    abstract_idx = split_idx(abstract)
+    query_idx = split_idx(query, TOKEN_OFFSET)
+    title_idx = split_idx(title, TOKEN_OFFSET)
+    abstract_idx = split_idx(abstract, TOKEN_OFFSET)
 
-    query_tokens = [SPECIAL_TOKENS["CLS"]] + query_idx + [SPECIAL_TOKENS["SEP"]]
-    query_token_types = [TOKEN_TYPES["QUERY"]] * len(query_tokens)
+    query_tokens = [special_token["CLS"]] + query_idx + [special_token["SEP"]]
+    query_token_types = [segment_type["QUERY"]] * len(query_tokens)
 
-    text_tokens += abstract_idx + [SPECIAL_TOKENS["SEP"]]
-    text_token_types = [TOKEN_TYPES["TEXT"]] * len(text_tokens)
     text_tokens = title_idx + [special_token["SEP"]]
+    text_tokens += abstract_idx + [special_token["SEP"]]
+    text_token_types = [segment_type["TEXT"]] * len(text_tokens)
 
     tokens = query_tokens + text_tokens
     token_types = query_token_types + text_token_types
 
     padding = max(max_tokens - len(tokens), 0)
-    tokens = tokens[:max_tokens] + padding * [SPECIAL_TOKENS["PAD"]]
-    token_types = token_types[:max_tokens] + padding * [TOKEN_TYPES["PAD"]]
+    tokens = tokens[:max_tokens] + padding * [special_token["PAD"]]
+    token_types = token_types[:max_tokens] + padding * [segment_type["PAD"]]
 
     tokens = torch.tensor(tokens, dtype=torch.int)
-    attention_mask = tokens > SPECIAL_TOKENS["PAD"]
     token_types = torch.tensor(token_types, dtype=torch.int)
 
-    return tokens, attention_mask, token_types
+    return tokens, token_types
 
 
-def split_idx(text, offset: int = 10):
+def split_idx(text, offset: int):
     """
     Split tokens in Baidu dataset and convert to integer token ids.
     """
@@ -69,11 +58,15 @@ class BaiduTrainDataset(IterableDataset):
         split_id: int,
         queries_per_split: int,
         max_sequence_length: int,
+        special_token: Dict[str, int],
+        segment_type: Dict[str, int],
     ):
         self.path = path
         self.max_sequence_length = max_sequence_length
         self.begin_query_id = split_id * queries_per_split
         self.end_query_id = (split_id + 1) * queries_per_split
+        self.special_token = special_token
+        self.segment_type = segment_type
 
         print(
             f"Split:{split_id}, query_ids: [{self.begin_query_id}, {self.end_query_id})"
@@ -117,14 +110,16 @@ class BaiduTrainDataset(IterableDataset):
                             "click": click,
                         }
 
-                        tokens, attention_mask, token_types = preprocess(
-                            query,
-                            title,
-                            abstract,
-                            self.max_sequence_length,
+                        tokens, token_types = preprocess(
+                            query=query,
+                            title=title,
+                            abstract=abstract,
+                            max_tokens=self.max_sequence_length,
+                            special_token=self.special_token,
+                            segment_type=self.segment_type,
                         )
 
-                        yield features, tokens, attention_mask, token_types
+                        yield features, tokens, token_types
                     elif query_id >= self.end_query_id:
                         # End of selected split reached, stop iterating
                         return
@@ -135,9 +130,13 @@ class BaiduTestDataset(IterableDataset):
         self,
         path: Path,
         max_sequence_length: int,
+        special_token: Dict[str, int],
+        segment_type: Dict[str, int],
     ):
         self.path = path
         self.max_sequence_length = max_sequence_length
+        self.special_token = special_token
+        self.segment_type = segment_type
 
     def __iter__(self):
         query_id = -1
@@ -159,11 +158,13 @@ class BaiduTestDataset(IterableDataset):
                     "frequency_bucket": int(frequency_bucket),
                 }
 
-                tokens, attention_mask, token_types = preprocess(
-                    query,
-                    title,
-                    abstract,
-                    self.max_sequence_length,
+                tokens, token_types = preprocess(
+                    query=query,
+                    title=title,
+                    abstract=abstract,
+                    max_tokens=self.max_sequence_length,
+                    special_token=self.special_token,
+                    segment_type=self.segment_type,
                 )
 
-                yield features, tokens, attention_mask, token_types
+                yield features, tokens, token_types
