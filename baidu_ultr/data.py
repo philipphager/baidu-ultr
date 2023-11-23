@@ -37,9 +37,9 @@ def preprocess(
     query_tokens = [SPECIAL_TOKENS["CLS"]] + query_idx + [SPECIAL_TOKENS["SEP"]]
     query_token_types = [TOKEN_TYPES["QUERY"]] * len(query_tokens)
 
-    text_tokens = title_idx + [SPECIAL_TOKENS["SEP"]] + abstract_idx
     text_tokens += abstract_idx + [SPECIAL_TOKENS["SEP"]]
     text_token_types = [TOKEN_TYPES["TEXT"]] * len(text_tokens)
+    text_tokens = title_idx + [special_token["SEP"]]
 
     tokens = query_tokens + text_tokens
     token_types = query_token_types + text_token_types
