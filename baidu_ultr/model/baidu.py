@@ -1,4 +1,5 @@
 import math
+from pathlib import Path
 from typing import Dict
 
 import torch
@@ -7,6 +8,7 @@ from torch.nn import TransformerEncoder, TransformerEncoderLayer
 from torch.optim.lr_scheduler import LambdaLR
 
 from baidu_ultr.const import BAIDU_SPECIAL_TOKENS
+from baidu_ultr.util import download_model
 
 BAIDU_CONFIG = {
     "ntoken": 22_000,
@@ -19,20 +21,28 @@ BAIDU_CONFIG = {
 
 
 class BaiduModel(nn.Module):
-    def __init__(self, path, device):
+    def __init__(self, model_directory, model_name):
         super().__init__()
-        self.path = path
-        self.device = device
+        self.model_directory = Path(model_directory)
+        self.model_name = model_name
+        self.path = self.model_directory / model_name
+        self.model = None
+        self.device = None
 
-    def load(self):
+    def load(self, device):
+        if not self.path.exists():
+            download_model(self.model_directory, self.model_name)
+
         model = TransformerModel(**BAIDU_CONFIG)
         model = nn.DataParallel(model)
-        model.load_state_dict(torch.load(self.path, map_location=self.device))
+        model.load_state_dict(torch.load(self.path, map_location=device))
         torch.compile(model)
         self.model = model
+        self.device = device
 
     def forward(self, tokens, token_types):
         mask = self.mask_padding(tokens, BAIDU_SPECIAL_TOKENS)
+        print(mask[0], tokens[0])
         return self.model(
             src=tokens.to(self.device),
             src_segment=token_types.to(self.device),
