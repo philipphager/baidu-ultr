@@ -2,24 +2,22 @@ from pathlib import Path
 
 import hydra
 import torch
+from hydra.utils import instantiate
+from omegaconf import OmegaConf
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 
-from baidu_ultr.const import SEGMENT_TYPES, BAIDU_SPECIAL_TOKENS
 from baidu_ultr.data import BaiduTestDataset, BaiduTrainDataset
-from baidu_ultr.model.tencent import TencentModel
-from baidu_ultr.util import download_model, DatasetWriter
+from baidu_ultr.util import DatasetWriter
 
 
 @hydra.main(version_base="1.3", config_path="config", config_name="config")
 def main(config):
-    device = torch.device("cuda:0")
-    model_path = Path(config.model_directory) / config.model
+    print(OmegaConf.to_yaml(config))
+
+    device = torch.device("cpu")
     data_directory = Path(config.data_directory)
     out_directory = Path(config.out_directory)
-
-    if not model_path.exists():
-        download_model(config.model_directory, config.model)
 
     if config.data_type == "train":
         in_path = data_directory / f"part-{config.train_part:05d}.gz"
@@ -31,8 +29,8 @@ def main(config):
             config.train_split_id,
             config.train_queries_per_split,
             config.max_sequence_length,
-            BAIDU_SPECIAL_TOKENS,
-            SEGMENT_TYPES,
+            config.tokens.special_tokens,
+            config.tokens.segment_types,
         )
     elif config.data_type == "val":
         in_path = data_directory / "annotation_data_0522.txt"
@@ -51,9 +49,8 @@ def main(config):
     print(in_path)
     print(out_file)
 
-    model = TencentModel(model_path, device)
-    model.load()
-
+    model = instantiate(config.model)
+    model.load(device)
     writer = DatasetWriter(half_precision=config.half_precision)
 
     for i, batch in tqdm(enumerate(dataset_loader)):
