@@ -15,7 +15,7 @@ from baidu_ultr.util import DatasetWriter
 def main(config):
     print(OmegaConf.to_yaml(config))
 
-    device = torch.device("cpu")
+    device = torch.device("cuda:0")
     data_directory = Path(config.data_directory)
     out_directory = Path(config.out_directory)
 
