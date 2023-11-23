@@ -1,5 +1,7 @@
-model: "base_group2"
-model_directory: "models/"
+defaults:
+  - model: baidu
+  - tokens: baidu
+
 batch_size: 96
 max_sequence_length: 128
 half_precision: True # Encode features using fp16

@@ -1,0 +1,3 @@
+_target_: baidu_ultr.model.baidu.BaiduModel
+model_directory: models/
+model_name: save_steps210000_0.88935_2.627676.12L.model

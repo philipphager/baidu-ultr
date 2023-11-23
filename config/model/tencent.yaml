@@ -1,0 +1,3 @@
+_target_: baidu_ultr.model.tencent.TencentModel
+model_directory: models/
+model_name: base_group2

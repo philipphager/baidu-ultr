@@ -1,0 +1,10 @@
+special_tokens:
+  CLS: 0
+  SEP: 1
+  PAD: 2
+  MASK: 3
+
+segment_types:
+  QUERY: 0
+  TEXT: 1
+  PAD: 1
