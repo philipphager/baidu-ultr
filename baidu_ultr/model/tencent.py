@@ -5,7 +5,7 @@ import torch
 from torch import nn
 from transformers import BertModel
 
-from baidu_ultr.const import TOKEN_OFFSET, TENCENT_SPECIAL_TOKENS
+from baidu_ultr.const import TENCENT_SPECIAL_TOKENS
 
 
 class TencentModel(nn.Module):
@@ -32,7 +32,6 @@ class TencentModel(nn.Module):
 
     def forward(self, tokens, token_types):
         mask = self.mask_attention(tokens, TENCENT_SPECIAL_TOKENS)
-        print(mask[0], tokens[0])
         output = self.model(
             input_ids=tokens.to(self.device),
             attention_mask=mask.to(self.device),
