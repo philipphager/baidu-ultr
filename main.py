@@ -36,7 +36,12 @@ def main(config):
         in_path = data_directory / "annotation_data_0522.txt"
         out_file = f"validation.feather"
 
-        dataset = BaiduTestDataset(in_path, config.max_sequence_length)
+        dataset = BaiduTestDataset(
+            in_path,
+            config.max_sequence_length,
+            config.tokens.special_tokens,
+            config.tokens.segment_types,
+        )
     else:
         raise ValueError("config.in_type must be in ['train', 'val']")
 
