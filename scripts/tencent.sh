@@ -11,7 +11,21 @@
 #SBATCH --mail-user=p.k.hager@uva.nl
 #SBATCH --array=0-9
 
+MODEL=tencent
+
 source ${HOME}/.bashrc
 conda activate baidu-ultr
 
-python main.py train_part=0 data_type=train train_split_id=$SLURM_ARRAY_TASK_ID
+python main.py \
+  train_part=0 \
+  data_type=train \
+  train_split_id=$SLURM_ARRAY_TASK_ID \
+  model="$MODEL" \
+  tokens="$MODEL" \
+  output_directory=data/"$MODEL"
+
+python main.py \
+  data_type=val \
+  model="$MODEL" \
+  tokens="$MODEL" \
+  output_directory=data/"$MODEL"
