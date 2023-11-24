@@ -22,10 +22,10 @@ python main.py \
   train_split_id=$SLURM_ARRAY_TASK_ID \
   model="$MODEL" \
   tokens="$MODEL" \
-  output_directory=data/"$MODEL"
+  out_directory=data/"$MODEL"
 
 python main.py \
   data_type=val \
   model="$MODEL" \
   tokens="$MODEL" \
-  output_directory=data/"$MODEL"
+  out_directory=data/"$MODEL"
