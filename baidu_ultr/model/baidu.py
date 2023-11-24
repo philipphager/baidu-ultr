@@ -42,7 +42,6 @@ class BaiduModel(nn.Module):
 
     def forward(self, tokens, token_types):
         mask = self.mask_padding(tokens, BAIDU_SPECIAL_TOKENS)
-        print(mask[0], tokens[0])
         return self.model(
             src=tokens.to(self.device),
             src_segment=token_types.to(self.device),
