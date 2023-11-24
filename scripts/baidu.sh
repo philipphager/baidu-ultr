@@ -14,7 +14,7 @@
 MODEL=baidu
 
 source ${HOME}/.bashrc
-conda activate baidu-ultr
+mambda activate baidu-ultr
 
 python main.py \
   train_part=0 \
