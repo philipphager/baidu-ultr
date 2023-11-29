@@ -16,6 +16,7 @@ def main(config):
     print(OmegaConf.to_yaml(config))
 
     device = torch.device("cuda:0")
+    device = torch.device("cpu")
     data_directory = Path(config.data_directory)
     out_directory = Path(config.out_directory)
 
@@ -61,12 +62,13 @@ def main(config):
     for i, batch in tqdm(enumerate(dataset_loader)):
         features, tokens, token_types = batch
 
-        query_document_embedding = model(
-            tokens,
-            token_types,
-        )
+        with torch.no_grad():
+            query_document_embedding = model(
+                tokens,
+                token_types,
+            )
 
-        assert not query_document_embedding.isnan().any(), "FOUND NAN"
+        assert not query_document_embedding.isnan().any()
 
         writer.add(features, query_document_embedding)
 
