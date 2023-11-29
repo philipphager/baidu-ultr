@@ -65,6 +65,9 @@ def main(config):
             tokens,
             token_types,
         )
+
+        assert not query_document_embedding.isnan().any(), "FOUND NAN"
+
         writer.add(features, query_document_embedding)
 
     writer.save(out_directory / out_file)
