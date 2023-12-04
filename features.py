@@ -107,7 +107,7 @@ class TestDatasetFeatures(IterableDataset):
                     "query_id": query_id,
                     "label": int(label),
                     "query_md5": md5(query),
-                    "text_md5": md5(title + abstract),
+                    "text_md5": md5(title + b"\x01" + abstract),
                     "frequency_bucket": int(frequency_bucket),
                 }
 
