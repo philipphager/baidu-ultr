@@ -66,7 +66,7 @@ class TrainDatasetFeatures(IterableDataset):
                             "query_id": query_id,
                             "query_md5": md5(query),
                             "url_md5": url.decode("utf-8"),
-                            "text_md5": md5(title + abstract),
+                            "text_md5": md5(title + b"\x01" + abstract),
                             "position": position,
                             "media_type": media_type,
                             "displayed_time": displayed_time,
