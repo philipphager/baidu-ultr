@@ -16,22 +16,14 @@ class TrainDatasetFeatures(IterableDataset):
     def __init__(
             self,
             path: Path,
-            split_id: int,
-            queries_per_split: int,
             max_sequence_length: int,
             special_token: Dict[str, int],
             segment_type: Dict[str, int],
     ):
         self.path = path
         self.max_sequence_length = max_sequence_length
-        self.begin_query_id = split_id * queries_per_split
-        self.end_query_id = (split_id + 1) * queries_per_split
         self.special_token = special_token
         self.segment_type = segment_type
-
-        print(
-            f"Split:{split_id}, query_ids: [{self.begin_query_id}, {self.end_query_id})"
-        )
 
     def __iter__(self):
         query_id = -1
@@ -47,33 +39,29 @@ class TrainDatasetFeatures(IterableDataset):
                     query_id += 1
                     query = columns[QueryColumns.QUERY]
                 else:
-                    # Iterate over dataset until assigned query range is reached:
-                    query_in_split = self.begin_query_id <= query_id < self.end_query_id
+                    title = columns[TrainColumns.TITLE]
+                    abstract = columns[TrainColumns.ABSTRACT]
+                    url = columns[TrainColumns.URL_MD5]
+                    position = int(columns[TrainColumns.POS])
+                    media_type = columns[TrainColumns.MULTIMEDIA_TYPE]
+                    media_type = int(media_type) if media_type != b"-" else 0
+                    displayed_time = float(columns[TrainColumns.DISPLAYED_TIME])
+                    slipoff = int(columns[TrainColumns.SLIPOFF_COUNT_AFTER_CLICK])
+                    serp_height = int(columns[TrainColumns.SERP_HEIGHT])
+                    click = int(columns[TrainColumns.CLICK])
 
-                    if query_in_split:
-                        title = columns[TrainColumns.TITLE]
-                        abstract = columns[TrainColumns.ABSTRACT]
-                        url = columns[TrainColumns.URL_MD5]
-                        position = int(columns[TrainColumns.POS])
-                        media_type = columns[TrainColumns.MULTIMEDIA_TYPE]
-                        media_type = int(media_type) if media_type != b"-" else 0
-                        displayed_time = float(columns[TrainColumns.DISPLAYED_TIME])
-                        slipoff = int(columns[TrainColumns.SLIPOFF_COUNT_AFTER_CLICK])
-                        serp_height = int(columns[TrainColumns.SERP_HEIGHT])
-                        click = int(columns[TrainColumns.CLICK])
-
-                        yield {
-                            "query_id": query_id,
-                            "query_md5": md5(query),
-                            "url_md5": url.decode("utf-8"),
-                            "text_md5": md5(title + b"\x01" + abstract),
-                            "position": position,
-                            "media_type": media_type,
-                            "displayed_time": displayed_time,
-                            "serp_height": serp_height,
-                            "slipoff_count_after_click": slipoff,
-                            "click": click,
-                        }
+                    yield {
+                        "query_id": query_id,
+                        "query_md5": md5(query),
+                        "url_md5": url.decode("utf-8"),
+                        "text_md5": md5(title + b"\x01" + abstract),
+                        "position": position,
+                        "media_type": media_type,
+                        "displayed_time": displayed_time,
+                        "serp_height": serp_height,
+                        "slipoff_count_after_click": slipoff,
+                        "click": click,
+                    }
 
 
 class TestDatasetFeatures(IterableDataset):
@@ -124,11 +112,9 @@ def main(config):
 
     if config.data_type == "train":
 
-        out_file = f"features-part-{config.train_part}_split-{config.train_split_id}.csv"
+        out_file = f"features-part-{config.train_part}.parquet"
         dataset = TrainDatasetFeatures(
             in_path,
-            config.train_split_id,
-            config.train_queries_per_split,
             config.max_sequence_length,
             config.tokens.special_tokens,
             config.tokens.segment_types,
@@ -152,7 +138,7 @@ def main(config):
         rows.append(row)
 
     df = pd.DataFrame(rows)
-    df.to_csv(out_directory / out_file, index=False)
+    df.to_parquet(out_directory / out_file, index=False)
 
 
 if __name__ == '__main__':
