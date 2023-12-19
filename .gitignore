@@ -6,7 +6,9 @@
 *.bin
 *.txt
 *.safetensors
+*.out
 
+multirun
 outputs
 output
 dataset
