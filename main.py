@@ -16,7 +16,6 @@ def main(config):
     print(OmegaConf.to_yaml(config))
 
     device = torch.device("cuda:0")
-    device = torch.device("cpu")
     data_directory = Path(config.data_directory)
     out_directory = Path(config.out_directory)
 
