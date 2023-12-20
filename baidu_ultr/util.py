@@ -27,7 +27,10 @@ class DatasetWriter:
 
     def save(self, path: Path):
         for k, v in self.features.items():
-            self.features[k] = list(torch.concat(self.features[k]).numpy())
+            if k == "url_md5":
+                self.features[k] = [u for urls in v for u in urls]
+            else:
+                self.features[k] = list(torch.concat(self.features[k]).numpy())
 
         self.features["query_document_embedding"] = list(
             torch.vstack(self.embeddings).numpy()
