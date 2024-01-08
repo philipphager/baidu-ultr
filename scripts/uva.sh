@@ -1,6 +1,6 @@
 #!/bin/bash -l
 
-#SBATCH --job-name=tencent
+#SBATCH --job-name=uva
 #SBATCH --time=02:00:00
 #SBATCH --nodes=1
 #SBATCH --cpus-per-task 8
@@ -11,7 +11,7 @@
 #SBATCH --mail-user=p.k.hager@uva.nl
 #SBATCH --array=0-9
 
-MODEL=tencent
+MODEL=uva
 
 source ${HOME}/.bashrc
 mamba activate baidu-ultr-features
