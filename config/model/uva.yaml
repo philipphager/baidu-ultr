@@ -1,0 +1,3 @@
+_target_: baidu_ultr.model.uva.UvaModel
+model_directory: models/uva/
+model_name: bert-12l-12h-mlm-ctr-500k

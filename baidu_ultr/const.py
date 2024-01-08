@@ -2,6 +2,13 @@ from enum import IntEnum
 
 TOKEN_OFFSET = 10
 
+UVA_SPECIAL_TOKENS = {
+    "PAD": 0,
+    "SEP": 1,
+    "CLS": 2,
+    "MASK": 3,
+}
+
 TENCENT_SPECIAL_TOKENS = {
     "PAD": 0,
     "SEP": 1,
