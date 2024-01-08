@@ -8,6 +8,7 @@
 *.safetensors
 *.out
 
+models
 multirun
 outputs
 output
