@@ -19,6 +19,8 @@ def main(config):
     data_directory = Path(config.data_directory)
     out_directory = Path(config.out_directory)
 
+    out_directory.mkdir(parents=True, exist_ok=True)
+
     if config.data_type == "train":
         in_path = data_directory / f"part-{config.train_part:05d}.gz"
         assert in_path.exists(), f"Train dataset not found at: {in_path}"
