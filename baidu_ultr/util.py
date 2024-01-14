@@ -11,8 +11,10 @@ class DatasetWriter:
     def __init__(
         self,
         half_precision: bool = True,
+        min_docs_per_query: int = 5,
     ):
         self.half_precision = half_precision
+        self.min_docs_per_query = min_docs_per_query
         self.features = defaultdict(lambda: [])
         self.embeddings = []
 
@@ -27,17 +29,30 @@ class DatasetWriter:
 
     def save(self, path: Path):
         for k, v in self.features.items():
-            if k == "url_md5":
-                self.features[k] = [u for urls in v for u in urls]
+            if "md5" in k or k == "query_id":
+                self.features[k] = [h for hashes in v for h in hashes]
             else:
                 self.features[k] = list(torch.concat(self.features[k]).numpy())
 
         self.features["query_document_embedding"] = list(
             torch.vstack(self.embeddings).numpy()
         )
-
         df = pd.DataFrame(self.features)
+        df = self.filter_queries(df)
         df.to_feather(path)
+
+    def filter_queries(self, df):
+        query_df = df.groupby("query_id").agg(n_docs=("url_md5", "count")).reset_index()
+
+        n_queries_before = len(query_df)
+        query_df = query_df[query_df.n_docs >= self.min_docs_per_query]
+        n_queries_after = len(query_df)
+        print(
+            f"Dropped {n_queries_before - n_queries_after} queries",
+            f"with less than {self.min_docs_per_query} docs",
+        )
+
+        return df[df.query_id.isin(set(query_df.query_id))]
 
 
 def download_model(directory: Path, name: str):

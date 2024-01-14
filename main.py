@@ -7,6 +7,7 @@ from omegaconf import OmegaConf
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 
+from baidu_ultr.const import TITLES
 from baidu_ultr.data import BaiduTestDataset, BaiduTrainDataset
 from baidu_ultr.util import DatasetWriter
 
@@ -18,14 +19,16 @@ def main(config):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     data_directory = Path(config.data_directory)
     out_directory = Path(config.out_directory)
-
     out_directory.mkdir(parents=True, exist_ok=True)
+
+    # Optionally skip documents based on their title
+    ignored_titles = [TITLES[t] for t in config.ignored_titles]
 
     if config.data_type == "train":
         in_path = data_directory / f"part-{config.train_part:05d}.gz"
+        out_file = f"part-{config.train_part}_split-{config.train_split_id}.feather"
         assert in_path.exists(), f"Train dataset not found at: {in_path}"
 
-        out_file = f"part-{config.train_part}_split-{config.train_split_id}.feather"
         dataset = BaiduTrainDataset(
             in_path,
             config.train_split_id,
@@ -33,16 +36,19 @@ def main(config):
             config.max_sequence_length,
             config.tokens.special_tokens,
             config.tokens.segment_types,
+            ignored_titles,
         )
     elif config.data_type == "val":
         in_path = data_directory / "annotation_data_0522.txt"
-        out_file = f"validation.feather"
+        out_file = "validation.feather"
+        assert in_path.exists(), f"Val dataset not found at: {in_path}"
 
         dataset = BaiduTestDataset(
             in_path,
             config.max_sequence_length,
             config.tokens.special_tokens,
             config.tokens.segment_types,
+            ignored_titles,
         )
     else:
         raise ValueError("config.in_type must be in ['train', 'val']")
@@ -52,9 +58,6 @@ def main(config):
         batch_size=config.batch_size,
         pin_memory=True,
     )
-
-    print(in_path)
-    print(out_file)
 
     model = instantiate(config.model)
     model.load(device)
@@ -70,7 +73,6 @@ def main(config):
             )
 
         assert not query_document_embedding.isnan().any()
-
         writer.add(features, query_document_embedding)
 
     writer.save(out_directory / out_file)

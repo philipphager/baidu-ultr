@@ -1,11 +1,12 @@
 import gzip
 from pathlib import Path
-from typing import Dict
+from typing import Dict, List
 
 import torch
 from torch.utils.data import IterableDataset
 
 from baidu_ultr.const import TrainColumns, QueryColumns, TOKEN_OFFSET
+from baidu_ultr.hash import md5
 
 
 def preprocess(
@@ -60,21 +61,25 @@ class BaiduTrainDataset(IterableDataset):
         max_sequence_length: int,
         special_token: Dict[str, int],
         segment_type: Dict[str, int],
+        ignored_titles: List[bytes],
     ):
         self.path = path
         self.max_sequence_length = max_sequence_length
-        self.begin_query_id = split_id * queries_per_split
-        self.end_query_id = (split_id + 1) * queries_per_split
+        self.begin_query = split_id * queries_per_split
+        self.end_query = (split_id + 1) * queries_per_split
         self.special_token = special_token
         self.segment_type = segment_type
+        self.ignored_titles = set(ignored_titles)
 
         print(
-            f"Split:{split_id}, query_ids: [{self.begin_query_id}, {self.end_query_id})"
+            f"Split:{split_id}, query_ids: [{self.begin_query}, {self.end_query})"
         )
 
     def __iter__(self):
-        query_id = -1
+        query_no = -1
+        qid = None
         query = None
+        skipped_docs = 0
 
         with gzip.open(self.path, "rb") as f:
             for i, line in enumerate(f):
@@ -83,14 +88,20 @@ class BaiduTrainDataset(IterableDataset):
 
                 if is_query:
                     # Create surrogate query_id to reduce memory:
-                    query_id += 1
+                    query_no += 1
+                    qid = columns[QueryColumns.QID].decode("utf-8")
                     query = columns[QueryColumns.QUERY]
                 else:
                     # Iterate over dataset until assigned query range is reached:
-                    query_in_split = self.begin_query_id <= query_id < self.end_query_id
+                    query_in_split = self.begin_query <= query_no < self.end_query
 
                     if query_in_split:
                         title = columns[TrainColumns.TITLE]
+
+                        if title in self.ignored_titles:
+                            skipped_docs += 1
+                            continue
+
                         abstract = columns[TrainColumns.ABSTRACT]
                         url = columns[TrainColumns.URL_MD5]
                         position = int(columns[TrainColumns.POS])
@@ -102,8 +113,10 @@ class BaiduTrainDataset(IterableDataset):
                         click = int(columns[TrainColumns.CLICK])
 
                         features = {
-                            "query_id": query_id,
+                            "query_id": qid,
+                            "query_md5": md5(query),
                             "url_md5": url.decode("utf-8"),
+                            "text_md5": md5(title + b"\x01" + abstract),
                             "position": position,
                             "media_type": media_type,
                             "displayed_time": displayed_time,
@@ -122,8 +135,9 @@ class BaiduTrainDataset(IterableDataset):
                         )
 
                         yield features, tokens, token_types
-                    elif query_id >= self.end_query_id:
+                    elif query_no >= self.end_query:
                         # End of selected split reached, stop iterating
+                        print("Split complete:", {"skipped_docs": skipped_docs})
                         return
 
 
@@ -134,28 +148,36 @@ class BaiduTestDataset(IterableDataset):
         max_sequence_length: int,
         special_token: Dict[str, int],
         segment_type: Dict[str, int],
+        ignored_titles: List[bytes],
     ):
         self.path = path
         self.max_sequence_length = max_sequence_length
         self.special_token = special_token
         self.segment_type = segment_type
+        self.ignored_titles = set(ignored_titles)
 
     def __iter__(self):
-        query_id = -1
-        current_query_id = None
+        query_no = -1
+        current_qid = None
 
         with open(self.path, "rb") as f:
             for i, line in enumerate(f):
                 columns = line.strip(b"\n").split(b"\t")
 
                 qid, query, title, abstract, label, frequency_bucket = columns
+                qid = qid.decode("utf-8")
 
-                if qid != current_query_id:
-                    query_id += 1
-                    current_query_id = qid
+                if title in self.ignored_titles:
+                    continue
+
+                if qid != current_qid:
+                    query_no += 1
+                    current_qid = qid
 
                 features = {
-                    "query_id": query_id,
+                    "query_id": current_qid,
+                    "query_md5": md5(query),
+                    "text_md5": md5(title + b"\x01" + abstract),
                     "label": int(label),
                     "frequency_bucket": int(frequency_bucket),
                 }
