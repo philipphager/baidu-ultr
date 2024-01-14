@@ -125,23 +125,3 @@ class PositionalEncoding(nn.Module):
             x: Tensor, shape [seq_len, batch_size, embedding_dim]
         """
         return self.dropout(self.pe[: x.size(0)])
-
-
-def get_linear_schedule_with_warmup(
-    optimizer, num_warmup_steps, num_training_steps, last_epoch=-1
-):
-    """Create a schedule with a learning rate that decreases linearly after
-    linearly increasing during a warmup period.
-    """
-
-    def lr_lambda(current_step):
-        if current_step < num_warmup_steps:
-            return float(current_step) / float(max(1, num_warmup_steps))
-        elif current_step >= num_training_steps:  # end_learning_rate=8e-8
-            return 0.04
-        else:
-            return float(num_training_steps - current_step) / float(
-                max(1, num_training_steps - num_warmup_steps)
-            )
-
-    return LambdaLR(optimizer, lr_lambda, last_epoch)
