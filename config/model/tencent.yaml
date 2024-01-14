@@ -1,3 +1,3 @@
-_target_: baidu_ultr.model.tencent.TencentModel
+_target_: src.model.tencent.TencentModel
 model_directory: models/tencent/
 model_name: base_group2
