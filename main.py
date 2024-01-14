@@ -59,7 +59,7 @@ def main(config):
         pin_memory=True,
     )
 
-    model = instantiate(config.model)
+    model = instantiate(config.model, special_tokens=config.tokens.special_tokens)
     model.load(device)
     writer = DatasetWriter(
         half_precision=config.half_precision,

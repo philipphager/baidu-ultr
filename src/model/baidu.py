@@ -5,9 +5,7 @@ from typing import Dict
 import torch
 from torch import nn, Tensor
 from torch.nn import TransformerEncoder, TransformerEncoderLayer
-from torch.optim.lr_scheduler import LambdaLR
 
-from src.const import BAIDU_SPECIAL_TOKENS
 from src.util import download_model
 
 BAIDU_CONFIG = {
@@ -21,10 +19,11 @@ BAIDU_CONFIG = {
 
 
 class BaiduModel(nn.Module):
-    def __init__(self, model_directory, model_name):
+    def __init__(self, model_directory: str, model_name: str, special_tokens: Dict):
         super().__init__()
         self.model_directory = Path(model_directory)
         self.model_name = model_name
+        self.special_tokens = special_tokens
         self.path = self.model_directory / model_name
         self.model = None
         self.device = None
@@ -41,7 +40,7 @@ class BaiduModel(nn.Module):
         self.device = device
 
     def forward(self, tokens, token_types):
-        mask = self.mask_padding(tokens, BAIDU_SPECIAL_TOKENS)
+        mask = self.mask_padding(tokens, self.special_tokens)
         return self.model(
             src=tokens.to(self.device),
             src_segment=token_types.to(self.device),

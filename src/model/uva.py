@@ -8,14 +8,13 @@ from torch.nn import CrossEntropyLoss
 from transformers import BertModel, PretrainedConfig, AutoConfig, BertForPreTraining
 from transformers.models.bert.modeling_bert import BertLMPredictionHead
 
-from src.const import UVA_SPECIAL_TOKENS
-
 
 class UvaModel(nn.Module):
-    def __init__(self, model_directory: str, model_name: str):
+    def __init__(self, model_directory: str, model_name: str, special_tokens: Dict):
         super().__init__()
         self.model_directory = Path(model_directory)
         self.model_name = model_name
+        self.special_tokens = special_tokens
         self.model = None
         self.device = None
 
@@ -39,7 +38,7 @@ class UvaModel(nn.Module):
         token_types: IntTensor,
         **kwargs,
     ):
-        mask = self.mask_attention(tokens, UVA_SPECIAL_TOKENS)
+        mask = self.mask_attention(tokens, self.special_tokens)
         _, query_document_embedding = self.model(
             tokens=tokens.to(self.device),
             attention_mask=mask.to(self.device),

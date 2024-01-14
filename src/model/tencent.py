@@ -5,14 +5,13 @@ import torch
 from torch import nn
 from transformers import BertModel
 
-from src.const import TENCENT_SPECIAL_TOKENS
-
 
 class TencentModel(nn.Module):
-    def __init__(self, model_directory: str, model_name: str):
+    def __init__(self, model_directory: str, model_name: str, special_tokens: Dict):
         super().__init__()
         self.model_directory = Path(model_directory)
         self.model_name = model_name
+        self.special_tokens = special_tokens
         self.model = None
         self.device = None
 
@@ -31,7 +30,7 @@ class TencentModel(nn.Module):
         self.device = device
 
     def forward(self, tokens, token_types):
-        mask = self.mask_attention(tokens, TENCENT_SPECIAL_TOKENS)
+        mask = self.mask_attention(tokens, self.special_tokens)
         output = self.model(
             input_ids=tokens.to(self.device),
             attention_mask=mask.to(self.device),
