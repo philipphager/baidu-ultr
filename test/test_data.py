@@ -3,29 +3,52 @@ from pathlib import Path
 import torch
 from torch.utils.data import DataLoader
 
-from src.const import SEGMENT_TYPES, BAIDU_SPECIAL_TOKENS, TENCENT_SPECIAL_TOKENS
 from src.data import BaiduTrainDataset, BaiduTestDataset
 from src.model.baidu import BaiduModel
 from src.model.tencent import TencentModel
 from test import tencent_dataloader, baidu_dataloader
 from test.baidu_dataloader import TrainDataset
 
+# Replace with path to Baidu dataset:
+DATA_DIRECTORY = Path("data/")
+
+TENCENT_SPECIAL_TOKENS = {
+    "PAD": 0,
+    "SEP": 1,
+    "CLS": 2,
+    "MASK": 3,
+}
+
+BAIDU_SPECIAL_TOKENS = {
+    "CLS": 0,
+    "SEP": 1,
+    "PAD": 2,
+    "MASK": 3,
+}
+
+SEGMENT_TYPES = {
+    "QUERY": 0,
+    "TEXT": 1,
+    "PAD": 1,  # See source code:
+}
+
 
 def test_baidu_click_dataset():
     dataset = BaiduTrainDataset(
-        Path("data/part-00001.gz"),
+        DATA_DIRECTORY / "part-00001.gz",
         split_id=0,
         queries_per_split=10,
         max_sequence_length=128,
         special_token=BAIDU_SPECIAL_TOKENS,
         segment_type=SEGMENT_TYPES,
+        ignored_titles=[],
     )
     loader = DataLoader(dataset, batch_size=100)
     actual_batch = next(iter(loader))
     features, tokens, token_types = actual_batch
     mask = BaiduModel.mask_padding(tokens, BAIDU_SPECIAL_TOKENS)
 
-    original_dataset = TrainDataset("data", buffer_size=100, max_seq_len=128)
+    original_dataset = TrainDataset(DATA_DIRECTORY, buffer_size=100, max_seq_len=128)
     original_loader = DataLoader(original_dataset, batch_size=100)
     expected_batch = next(iter(original_loader))
     (
@@ -43,10 +66,11 @@ def test_baidu_click_dataset():
 
 def test_baidu_annotation_dataset():
     dataset = BaiduTestDataset(
-        Path("data/annotation_data_0522.txt"),
+        DATA_DIRECTORY / "annotation_data_0522.txt",
         max_sequence_length=128,
         special_token=BAIDU_SPECIAL_TOKENS,
         segment_type=SEGMENT_TYPES,
+        ignored_titles=[],
     )
     loader = DataLoader(dataset, batch_size=100)
     actual_batch = next(iter(loader))
@@ -54,7 +78,7 @@ def test_baidu_annotation_dataset():
     mask = BaiduModel.mask_padding(tokens, BAIDU_SPECIAL_TOKENS)
 
     original_dataset = baidu_dataloader.TestDataset(
-        Path("data/annotation_data_0522.txt"),
+        DATA_DIRECTORY / "annotation_data_0522.txt",
         max_seq_len=128,
         data_type="annotate",
         buffer_size=100,
@@ -71,12 +95,13 @@ def test_baidu_annotation_dataset():
 
 def test_tencent_click_dataset():
     dataset = BaiduTrainDataset(
-        Path("data/part-00001.gz"),
+        DATA_DIRECTORY / "part-00001.gz",
         split_id=0,
         queries_per_split=10,
         max_sequence_length=128,
         special_token=TENCENT_SPECIAL_TOKENS,
         segment_type=SEGMENT_TYPES,
+        ignored_titles=[],
     )
 
     loader = DataLoader(dataset, batch_size=100)
@@ -85,7 +110,10 @@ def test_tencent_click_dataset():
     mask = TencentModel.mask_attention(tokens, TENCENT_SPECIAL_TOKENS)
 
     original_dataset = tencent_dataloader.TestDataset(
-        Path("data/part-00001.gz"), max_seq_len=128, data_type="click", buffer_size=100
+        DATA_DIRECTORY / "part-00001.gz",
+        max_seq_len=128,
+        data_type="click",
+        buffer_size=100,
     )
 
     for i in range(100):
@@ -95,7 +123,7 @@ def test_tencent_click_dataset():
         expected_token_types = torch.tensor(expected_row["segment"])
         expected_clicks = torch.tensor(expected_row["label"])
         # See: https://github.com/lixsh6/Tencent_wsdm_cup2023/blob/270ff4afdc6492b223e65c16de996e139ff7cf21/pytorch_unbias/pretrain/dataset.py#L259C35-L259C58
-        expected_mask = (expected_tokens > 0)
+        expected_mask = expected_tokens > 0
 
         assert torch.eq(tokens[i], expected_tokens).all()
         assert torch.eq(token_types[i], expected_token_types).all()
@@ -105,10 +133,11 @@ def test_tencent_click_dataset():
 
 def test_tencent_annotation_dataset():
     dataset = BaiduTestDataset(
-        Path("data/annotation_data_0522.txt"),
+        DATA_DIRECTORY / "annotation_data_0522.txt",
         max_sequence_length=128,
         special_token=TENCENT_SPECIAL_TOKENS,
         segment_type=SEGMENT_TYPES,
+        ignored_titles=[],
     )
 
     loader = DataLoader(dataset, batch_size=100)
@@ -117,7 +146,7 @@ def test_tencent_annotation_dataset():
     mask = TencentModel.mask_attention(tokens, TENCENT_SPECIAL_TOKENS)
 
     original_dataset = tencent_dataloader.TestDataset(
-        Path("data/annotation_data_0522.txt"),
+        DATA_DIRECTORY / "annotation_data_0522.txt",
         max_seq_len=128,
         data_type="annotate",
         buffer_size=100,
@@ -130,7 +159,7 @@ def test_tencent_annotation_dataset():
         expected_token_types = torch.tensor(expected_row["segment"])
         expected_label = torch.tensor(expected_row["label"])
         # See: https://github.com/lixsh6/Tencent_wsdm_cup2023/blob/270ff4afdc6492b223e65c16de996e139ff7cf21/pytorch_unbias/pretrain/dataset.py#L259C35-L259C58
-        expected_mask = (expected_tokens > 0)
+        expected_mask = expected_tokens > 0
 
         assert torch.eq(tokens[i], expected_tokens).all()
         assert torch.eq(token_types[i], expected_token_types).all()

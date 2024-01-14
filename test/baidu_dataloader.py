@@ -106,7 +106,7 @@ class TrainDataset(IterableDataset):
     def __init__(self, directory_path, buffer_size=100000, max_seq_len=128):
         self.directory_path = directory_path
         self.buffer_size = buffer_size
-        self.files = os.listdir(self.directory_path)
+        self.files = sorted(os.listdir(self.directory_path))
         self.cur_query = "#"
         self.max_seq_len = max_seq_len
 
