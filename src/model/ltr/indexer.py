@@ -7,8 +7,8 @@ from typing import List, Dict
 from rbloom import Bloom
 from tqdm import tqdm
 
-from baidu_ultr.const import TrainColumns, TOKEN_OFFSET
-from baidu_ultr.data import split_idx
+from src.const import TrainColumns, TOKEN_OFFSET
+from src.data import split_idx
 
 
 class Indexer:

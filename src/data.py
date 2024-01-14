@@ -5,8 +5,8 @@ from typing import Dict, List
 import torch
 from torch.utils.data import IterableDataset
 
-from baidu_ultr.const import TrainColumns, QueryColumns, TOKEN_OFFSET
-from baidu_ultr.hash import md5
+from src.const import TrainColumns, QueryColumns, TOKEN_OFFSET
+from src.hash import md5
 
 
 def preprocess(

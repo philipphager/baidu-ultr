@@ -2,8 +2,8 @@ from pathlib import Path
 
 import hydra
 
-from baidu_ultr.const import MISSING_TITLE, WHAT_OTHER_PEOPLE_SEARCHED_TITLE
-from baidu_ultr.model.ltr.indexer import Indexer
+from src.const import MISSING_TITLE, WHAT_OTHER_PEOPLE_SEARCHED_TITLE
+from src.model.ltr.indexer import Indexer
 
 
 @hydra.main(version_base="1.3", config_path="config", config_name="config")

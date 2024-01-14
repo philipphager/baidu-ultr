@@ -7,8 +7,8 @@ from torch import nn, Tensor
 from torch.nn import TransformerEncoder, TransformerEncoderLayer
 from torch.optim.lr_scheduler import LambdaLR
 
-from baidu_ultr.const import BAIDU_SPECIAL_TOKENS
-from baidu_ultr.util import download_model
+from src.const import BAIDU_SPECIAL_TOKENS
+from src.util import download_model
 
 BAIDU_CONFIG = {
     "ntoken": 22_000,

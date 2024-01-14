@@ -3,10 +3,10 @@ from pathlib import Path
 import torch
 from torch.utils.data import DataLoader
 
-from baidu_ultr.const import SEGMENT_TYPES, BAIDU_SPECIAL_TOKENS, TENCENT_SPECIAL_TOKENS
-from baidu_ultr.data import BaiduTrainDataset, BaiduTestDataset
-from baidu_ultr.model.baidu import BaiduModel
-from baidu_ultr.model.tencent import TencentModel
+from src.const import SEGMENT_TYPES, BAIDU_SPECIAL_TOKENS, TENCENT_SPECIAL_TOKENS
+from src.data import BaiduTrainDataset, BaiduTestDataset
+from src.model.baidu import BaiduModel
+from src.model.tencent import TencentModel
 from test import tencent_dataloader, baidu_dataloader
 from test.baidu_dataloader import TrainDataset
 

@@ -8,7 +8,7 @@ from torch.nn import CrossEntropyLoss
 from transformers import BertModel, PretrainedConfig, AutoConfig, BertForPreTraining
 from transformers.models.bert.modeling_bert import BertLMPredictionHead
 
-from baidu_ultr.const import UVA_SPECIAL_TOKENS
+from src.const import UVA_SPECIAL_TOKENS
 
 
 class UvaModel(nn.Module):

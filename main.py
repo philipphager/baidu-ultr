@@ -7,9 +7,9 @@ from omegaconf import OmegaConf
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 
-from baidu_ultr.const import TITLES
-from baidu_ultr.data import BaiduTestDataset, BaiduTrainDataset
-from baidu_ultr.util import DatasetWriter
+from src.const import TITLES
+from src.data import BaiduTestDataset, BaiduTrainDataset
+from src.util import DatasetWriter
 
 
 @hydra.main(version_base="1.3", config_path="config", config_name="config")

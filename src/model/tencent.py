@@ -5,7 +5,7 @@ import torch
 from torch import nn
 from transformers import BertModel
 
-from baidu_ultr.const import TENCENT_SPECIAL_TOKENS
+from src.const import TENCENT_SPECIAL_TOKENS
 
 
 class TencentModel(nn.Module):
