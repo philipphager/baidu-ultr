@@ -1,6 +1,8 @@
 defaults:
   - model: baidu
   - tokens: baidu
+  - override hydra/hydra_logging: disabled # Disable hydra logging
+  - override hydra/job_logging: disabled # Disable hydra logging
 
 batch_size: 96
 max_sequence_length: 128
@@ -14,3 +16,7 @@ out_directory: "output/"
 train_part: 0 # Baidu dataset part: 0 - 1999
 train_split_id: 0 # One dataset part typically has 10 splits, each with 65_536 queries
 train_queries_per_split: 65_536
+hydra:
+  output_subdir: null  # Disable hydra logging
+  run:
+    dir: .
