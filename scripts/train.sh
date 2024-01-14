@@ -12,11 +12,13 @@
 #SBATCH --array=0-9
 
 echo "Model: $1"
+echo "Part: $2"
+
 source ${HOME}/.bashrc
 mamba activate baidu-ultr-features
 
 python main.py \
-  train_part=0 \
+  train_part=$2 \
   data_type=train \
   train_split_id=$SLURM_ARRAY_TASK_ID \
   model="$1" \
