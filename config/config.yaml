@@ -1,4 +1,5 @@
 defaults:
+  - _self_
   - model: baidu
   - tokens: baidu
   - override hydra/hydra_logging: disabled # Disable hydra logging
