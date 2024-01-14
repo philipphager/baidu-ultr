@@ -29,6 +29,11 @@ SEGMENT_TYPES = {
     "PAD": 1,  # See source code:
 }
 
+TITLES = {
+    "MISSING": b"21429",
+    "WHAT_OTHER_PEOPLE_SEARCHED": b"3742\x0111492\x0112169\x015061\x0116905",
+}
+
 
 class QueryColumns(IntEnum):
     QID = 0
@@ -72,7 +77,3 @@ class TestColumns(IntEnum):
     ABSTRACT = 2
     LABEL = 3
     BUCKET = 4
-
-MISSING_TITLE = b"21429"
-WHAT_OTHER_PEOPLE_SEARCHED_TITLE = b"3742\x0111492\x0112169\x015061\x0116905"
-
