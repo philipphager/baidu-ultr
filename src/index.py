@@ -15,12 +15,11 @@ class Indexer:
     def __init__(
             self,
             paths: List[Path],
-            output_path: Path,
             ignored_titles: List,
     ):
         self.paths = paths
-        self.output_path = output_path
         self.ignored_titles = set(ignored_titles)
+        # Bloom filter to check if doc was already indexed before:
         self.indexed_urls = Bloom(1_000_000_000, 0.001)
         self.index = {
             "corpus": {
@@ -82,8 +81,6 @@ class Indexer:
                         stats["total_occurrences"] += freq
 
                     self.indexed_urls.add(url)
-
-                save_index(self.output_path, self.index)
 
         return self.index
 

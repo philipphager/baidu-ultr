@@ -18,6 +18,7 @@ out_directory: "output/"
 train_part: 0 # Baidu dataset part: 0 - 1999
 train_split_id: 0 # One dataset part typically has 10 splits, each with 65_536 queries
 train_queries_per_split: 65_536
+index_parts: 50
 
 ignored_titles:
   - MISSING
