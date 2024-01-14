@@ -2,33 +2,6 @@ from enum import IntEnum
 
 TOKEN_OFFSET = 10
 
-UVA_SPECIAL_TOKENS = {
-    "PAD": 0,
-    "SEP": 1,
-    "CLS": 2,
-    "MASK": 3,
-}
-
-TENCENT_SPECIAL_TOKENS = {
-    "PAD": 0,
-    "SEP": 1,
-    "CLS": 2,
-    "MASK": 3,
-}
-
-BAIDU_SPECIAL_TOKENS = {
-    "CLS": 0,
-    "SEP": 1,
-    "PAD": 2,
-    "MASK": 3,
-}
-
-SEGMENT_TYPES = {
-    "QUERY": 0,
-    "TEXT": 1,
-    "PAD": 1,  # See source code:
-}
-
 TITLES = {
     "MISSING": b"21429",
     "WHAT_OTHER_PEOPLE_SEARCHED": b"3742\x0111492\x0112169\x015061\x0116905",
