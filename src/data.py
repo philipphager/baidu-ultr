@@ -70,14 +70,11 @@ class BaiduTrainDataset(IterableDataset):
         self.special_token = special_token
         self.segment_type = segment_type
         self.ignored_titles = set(ignored_titles)
-
-        print(
-            f"Split:{split_id}, query_ids: [{self.begin_query}, {self.end_query})"
-        )
+        print(f"Split:{split_id}, query_ids: [{self.begin_query}, {self.end_query})")
 
     def __iter__(self):
         query_no = -1
-        qid = None
+        query_id = None
         query = None
         skipped_docs = 0
 
@@ -87,9 +84,8 @@ class BaiduTrainDataset(IterableDataset):
                 is_query = len(columns) <= 3
 
                 if is_query:
-                    # Create surrogate query_id to reduce memory:
                     query_no += 1
-                    qid = columns[QueryColumns.QID].decode("utf-8")
+                    query_id = columns[QueryColumns.QID]
                     query = columns[QueryColumns.QUERY]
                 else:
                     # Iterate over dataset until assigned query range is reached:
@@ -113,7 +109,7 @@ class BaiduTrainDataset(IterableDataset):
                         click = int(columns[TrainColumns.CLICK])
 
                         features = {
-                            "query_id": qid,
+                            "query_id": query_id.decode("utf-8"),
                             "query_md5": md5(query),
                             "url_md5": url.decode("utf-8"),
                             "text_md5": md5(title + b"\x01" + abstract),
@@ -138,7 +134,7 @@ class BaiduTrainDataset(IterableDataset):
                     elif query_no >= self.end_query:
                         # End of selected split reached, stop iterating
                         print("Split complete:", {"skipped_docs": skipped_docs})
-                        return
+                        break
 
 
 class BaiduTestDataset(IterableDataset):
@@ -157,25 +153,20 @@ class BaiduTestDataset(IterableDataset):
         self.ignored_titles = set(ignored_titles)
 
     def __iter__(self):
-        query_no = -1
-        current_qid = None
+        skipped_docs = 0
 
         with open(self.path, "rb") as f:
             for i, line in enumerate(f):
                 columns = line.strip(b"\n").split(b"\t")
 
-                qid, query, title, abstract, label, frequency_bucket = columns
-                qid = qid.decode("utf-8")
+                query_id, query, title, abstract, label, frequency_bucket = columns
 
                 if title in self.ignored_titles:
+                    skipped_docs += 1
                     continue
 
-                if qid != current_qid:
-                    query_no += 1
-                    current_qid = qid
-
                 features = {
-                    "query_id": current_qid,
+                    "query_id": query_id.decode("utf-8"),
                     "query_md5": md5(query),
                     "text_md5": md5(title + b"\x01" + abstract),
                     "label": int(label),
@@ -192,3 +183,5 @@ class BaiduTestDataset(IterableDataset):
                 )
 
                 yield features, tokens, token_types
+
+        print("Split complete:", {"skipped_docs": skipped_docs})
