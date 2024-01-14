@@ -10,8 +10,8 @@ import wget
 class DatasetWriter:
     def __init__(
         self,
-        half_precision: bool = True,
-        min_docs_per_query: int = 5,
+        half_precision: bool,
+        min_docs_per_query: int,
     ):
         self.half_precision = half_precision
         self.min_docs_per_query = min_docs_per_query

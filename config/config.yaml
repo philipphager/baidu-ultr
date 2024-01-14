@@ -8,6 +8,7 @@ defaults:
 batch_size: 96
 max_sequence_length: 128
 half_precision: True # Encode features using fp16
+min_docs_per_query: 5 # Remove queries with too few documents
 
 data_type: train # [train, val]
 data_directory: "data/"

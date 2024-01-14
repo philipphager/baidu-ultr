@@ -61,7 +61,10 @@ def main(config):
 
     model = instantiate(config.model)
     model.load(device)
-    writer = DatasetWriter(half_precision=config.half_precision)
+    writer = DatasetWriter(
+        half_precision=config.half_precision,
+        min_docs_per_query=config.min_docs_per_query,
+    )
 
     for i, batch in tqdm(enumerate(dataset_loader)):
         features, tokens, token_types = batch
