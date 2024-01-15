@@ -8,7 +8,6 @@ defaults:
 batch_size: 96
 max_sequence_length: 128
 half_precision: True # Encode features using fp16
-min_docs_per_query: 5 # Remove queries with too few documents
 
 data_type: train # [train, val]
 data_directory: "data/"
@@ -18,11 +17,14 @@ out_directory: "output/"
 train_part: 0 # Baidu dataset part: 0 - 1999
 train_split_id: 0 # One dataset part typically has 10 splits, each with 65_536 queries
 train_queries_per_split: 65_536
-index_parts: 50
 
-ignored_titles:
-  - MISSING
-  - WHAT_OTHER_PEOPLE_SEARCHED
+# Preprocessing and filtering:
+drop_missing_docs: True # Remove items with a missing title, marked as "-"
+skip_what_others_searched: True # Remove items with title "What other people searched for"
+min_docs_per_query: 5 # Remove queries with too few documents
+
+# Arguments for creating an index for BM25, TF-IDF features:
+index_parts: 50
 
 hydra:
   output_subdir: null  # Disable hydra logging
