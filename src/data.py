@@ -98,6 +98,7 @@ class BaiduTrainDataset(IterableDataset):
 
                     if query_in_split:
                         title = columns[TrainColumns.TITLE]
+                        stats["total_docs"] += 1
 
                         if self.drop_missing_docs and title == Title.MISSING.value:
                             # Drop results with "-" as content. The dropped item
@@ -177,8 +178,8 @@ class BaiduTestDataset(IterableDataset):
         with open(self.path, "rb") as f:
             for i, line in enumerate(f):
                 columns = line.strip(b"\n").split(b"\t")
-
                 query_id, query, title, abstract, label, frequency_bucket = columns
+                stats["total_docs"] += 1
 
                 if self.drop_missing_docs and title == Title.MISSING.value:
                     stats["dropped_missing_docs"] += 1
