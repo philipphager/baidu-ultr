@@ -1,11 +1,12 @@
 import gzip
+from collections import defaultdict
 from pathlib import Path
-from typing import Dict, List
+from typing import Dict
 
 import torch
 from torch.utils.data import IterableDataset
 
-from src.const import TrainColumns, QueryColumns, TOKEN_OFFSET
+from src.const import TrainColumns, QueryColumns, TOKEN_OFFSET, Title
 from src.hash import md5
 
 
@@ -61,7 +62,8 @@ class BaiduTrainDataset(IterableDataset):
         max_sequence_length: int,
         special_token: Dict[str, int],
         segment_type: Dict[str, int],
-        ignored_titles: List[bytes],
+        drop_missing_docs: bool,
+        skip_what_others_searched: bool,
     ):
         self.path = path
         self.max_sequence_length = max_sequence_length
@@ -69,14 +71,16 @@ class BaiduTrainDataset(IterableDataset):
         self.end_query = (split_id + 1) * queries_per_split
         self.special_token = special_token
         self.segment_type = segment_type
-        self.ignored_titles = set(ignored_titles)
+        self.drop_missing_docs = drop_missing_docs
+        self.skip_what_others_searched = skip_what_others_searched
         print(f"Split:{split_id}, query_ids: [{self.begin_query}, {self.end_query})")
 
     def __iter__(self):
         query_no = -1
+        position = -1
         query_id = None
         query = None
-        skipped_docs = 0
+        stats = defaultdict(lambda: 0)
 
         with gzip.open(self.path, "rb") as f:
             for i, line in enumerate(f):
@@ -87,6 +91,7 @@ class BaiduTrainDataset(IterableDataset):
                     query_no += 1
                     query_id = columns[QueryColumns.QID]
                     query = columns[QueryColumns.QUERY]
+                    position = 1
                 else:
                     # Iterate over dataset until assigned query range is reached:
                     query_in_split = self.begin_query <= query_no < self.end_query
@@ -94,13 +99,24 @@ class BaiduTrainDataset(IterableDataset):
                     if query_in_split:
                         title = columns[TrainColumns.TITLE]
 
-                        if title in self.ignored_titles:
-                            skipped_docs += 1
+                        if self.drop_missing_docs and title == Title.MISSING.value:
+                            # Drop results with "-" as content. The dropped item
+                            # is reflected in the item position, e.g.: 1, [drop], 3, ...
+                            position += 1
+                            stats["dropped_missing_docs"] += 1
+                            continue
+
+                        if (
+                            self.skip_what_others_searched
+                            and title == Title.WHAT_OTHERS_SEARCHED.value
+                        ):
+                            # Skipping item "what other people searched for". The skip
+                            # is not reflected in the item position: 1, [skip], 2, ...
+                            stats["skipped_what_others_searched"] += 1
                             continue
 
                         abstract = columns[TrainColumns.ABSTRACT]
                         url = columns[TrainColumns.URL_MD5]
-                        position = int(columns[TrainColumns.POS])
                         media_type = columns[TrainColumns.MULTIMEDIA_TYPE]
                         media_type = int(media_type) if media_type != b"-" else 0
                         displayed_time = float(columns[TrainColumns.DISPLAYED_TIME])
@@ -131,9 +147,10 @@ class BaiduTrainDataset(IterableDataset):
                         )
 
                         yield features, tokens, token_types
+                        position += 1
                     elif query_no >= self.end_query:
                         # End of selected split reached, stop iterating
-                        print("Split complete:", {"skipped_docs": skipped_docs})
+                        print("Split complete:", stats)
                         break
 
 
@@ -144,16 +161,18 @@ class BaiduTestDataset(IterableDataset):
         max_sequence_length: int,
         special_token: Dict[str, int],
         segment_type: Dict[str, int],
-        ignored_titles: List[bytes],
+        drop_missing_docs: bool,
+        skip_what_others_searched: bool,
     ):
         self.path = path
         self.max_sequence_length = max_sequence_length
         self.special_token = special_token
         self.segment_type = segment_type
-        self.ignored_titles = set(ignored_titles)
+        self.drop_missing_docs = drop_missing_docs
+        self.skip_what_others_searched = skip_what_others_searched
 
     def __iter__(self):
-        skipped_docs = 0
+        stats = defaultdict(lambda: 0)
 
         with open(self.path, "rb") as f:
             for i, line in enumerate(f):
@@ -161,8 +180,15 @@ class BaiduTestDataset(IterableDataset):
 
                 query_id, query, title, abstract, label, frequency_bucket = columns
 
-                if title in self.ignored_titles:
-                    skipped_docs += 1
+                if self.drop_missing_docs and title == Title.MISSING.value:
+                    stats["dropped_missing_docs"] += 1
+                    continue
+
+                if (
+                    self.skip_what_others_searched
+                    and title == Title.WHAT_OTHERS_SEARCHED.value
+                ):
+                    stats["skipped_what_others_searched"] += 1
                     continue
 
                 features = {
@@ -184,4 +210,4 @@ class BaiduTestDataset(IterableDataset):
 
                 yield features, tokens, token_types
 
-        print("Split complete:", {"skipped_docs": skipped_docs})
+        print("Split complete:", stats)
