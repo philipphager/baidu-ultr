@@ -5,7 +5,6 @@ import torch
 from torch import LongTensor, IntTensor, BoolTensor
 from torch import nn
 from transformers import PretrainedConfig, AutoConfig, BertForPreTraining
-from transformers.models.bert.modeling_bert import BertLMPredictionHead
 
 
 class UvaModel(nn.Module):
