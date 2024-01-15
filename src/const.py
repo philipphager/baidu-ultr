@@ -1,11 +1,11 @@
-from enum import IntEnum
+from enum import IntEnum, Enum
 
 TOKEN_OFFSET = 10
 
-TITLES = {
-    "MISSING": b"21429",
-    "WHAT_OTHER_PEOPLE_SEARCHED": b"3742\x0111492\x0112169\x015061\x0116905",
-}
+
+class Title(Enum):
+    MISSING = b"21429"
+    WHAT_OTHERS_SEARCHED = b"3742\x0111492\x0112169\x015061\x0116905"
 
 
 class QueryColumns(IntEnum):

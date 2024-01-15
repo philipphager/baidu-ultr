@@ -7,7 +7,6 @@ from omegaconf import OmegaConf
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 
-from src.const import TITLES
 from src.data import BaiduTestDataset, BaiduTrainDataset
 from src.util import DatasetWriter
 
@@ -21,22 +20,20 @@ def main(config):
     out_directory = Path(config.out_directory)
     out_directory.mkdir(parents=True, exist_ok=True)
 
-    # Optionally skip documents based on their title
-    ignored_titles = [TITLES[t] for t in config.ignored_titles]
-
     if config.data_type == "train":
         in_path = data_directory / f"part-{config.train_part:05d}.gz"
         out_file = f"part-{config.train_part}_split-{config.train_split_id}.feather"
         assert in_path.exists(), f"Train dataset not found at: {in_path}"
 
         dataset = BaiduTrainDataset(
-            in_path,
-            config.train_split_id,
-            config.train_queries_per_split,
-            config.max_sequence_length,
-            config.tokens.special_tokens,
-            config.tokens.segment_types,
-            ignored_titles,
+            path=in_path,
+            split_id=config.train_split_id,
+            queries_per_split=config.train_queries_per_split,
+            max_sequence_length=config.max_sequence_length,
+            special_token=config.tokens.special_tokens,
+            segment_type=config.tokens.segment_types,
+            drop_missing_docs=config.drop_missing_docs,
+            skip_what_others_searched=config.skip_what_others_searched,
         )
     elif config.data_type == "val":
         in_path = data_directory / "annotation_data_0522.txt"
@@ -44,11 +41,12 @@ def main(config):
         assert in_path.exists(), f"Val dataset not found at: {in_path}"
 
         dataset = BaiduTestDataset(
-            in_path,
-            config.max_sequence_length,
-            config.tokens.special_tokens,
-            config.tokens.segment_types,
-            ignored_titles,
+            path=in_path,
+            max_sequence_length=config.max_sequence_length,
+            special_token=config.tokens.special_tokens,
+            segment_type=config.tokens.segment_types,
+            drop_missing_docs=config.drop_missing_docs,
+            skip_what_others_searched=config.skip_what_others_searched,
         )
     else:
         raise ValueError("config.in_type must be in ['train', 'val']")
