@@ -41,7 +41,8 @@ def test_baidu_click_dataset():
         max_sequence_length=128,
         special_token=BAIDU_SPECIAL_TOKENS,
         segment_type=SEGMENT_TYPES,
-        ignored_titles=[],
+        drop_missing_docs=False,
+        skip_what_others_searched=False,
     )
     loader = DataLoader(dataset, batch_size=100)
     actual_batch = next(iter(loader))
@@ -70,7 +71,8 @@ def test_baidu_annotation_dataset():
         max_sequence_length=128,
         special_token=BAIDU_SPECIAL_TOKENS,
         segment_type=SEGMENT_TYPES,
-        ignored_titles=[],
+        drop_missing_docs=False,
+        skip_what_others_searched=False,
     )
     loader = DataLoader(dataset, batch_size=100)
     actual_batch = next(iter(loader))
@@ -101,7 +103,8 @@ def test_tencent_click_dataset():
         max_sequence_length=128,
         special_token=TENCENT_SPECIAL_TOKENS,
         segment_type=SEGMENT_TYPES,
-        ignored_titles=[],
+        drop_missing_docs=False,
+        skip_what_others_searched=False,
     )
 
     loader = DataLoader(dataset, batch_size=100)
@@ -137,7 +140,8 @@ def test_tencent_annotation_dataset():
         max_sequence_length=128,
         special_token=TENCENT_SPECIAL_TOKENS,
         segment_type=SEGMENT_TYPES,
-        ignored_titles=[],
+        drop_missing_docs=False,
+        skip_what_others_searched=False,
     )
 
     loader = DataLoader(dataset, batch_size=100)
