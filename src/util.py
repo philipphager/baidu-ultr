@@ -42,7 +42,7 @@ class DatasetWriter:
         df.to_feather(path)
 
     def filter_queries(self, df):
-        query_df = df.groupby("query_id").agg(n_docs=("url_md5", "count")).reset_index()
+        query_df = df.groupby("query_id").agg(n_docs=("text_md5", "count")).reset_index()
 
         n_queries_before = len(query_df)
         query_df = query_df[query_df.n_docs >= self.min_docs_per_query]
