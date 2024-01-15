@@ -55,7 +55,6 @@ class UvaModel(nn.Module):
 class BertModel(BertForPreTraining):
     def __init__(self, config: PretrainedConfig):
         super(BertModel, self).__init__(config)
-        self.mlm_head = BertLMPredictionHead(config)
 
     def forward(
         self,
