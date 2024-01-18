@@ -3,6 +3,8 @@ from typing import Dict, List, Optional
 
 import numpy as np
 
+from src.lexical.indexer import get_document_frequency
+
 
 class QueryLikelihood:
     def __init__(
@@ -35,10 +37,12 @@ class QueryLikelihood:
 
         for token in query:
             tf = token2tf.get(token, 0)
-            df = self.index["tokens"][str(token)][self.field]["total_occurrences"]
+            df = get_document_frequency(self.index, token, self.field, unique=False)
 
             p_doc = tf / doc_length
             p_corpus = df / self.total_tokens
-            score += np.log(alpha * p_corpus + (1 - alpha) * p_doc)
+
+            if p_doc > 0 or p_corpus > 0:
+                score += np.log(alpha * p_corpus + (1 - alpha) * p_doc)
 
         return score

@@ -85,6 +85,14 @@ class Indexer:
         return self.index
 
 
+def get_document_frequency(index: Dict, token: int, field: str, unique: bool) -> int:
+    if str(token) not in index["tokens"]:
+        return 0
+
+    occurrence = "unique_occurrences" if unique else "total_occurrences"
+    return index["tokens"][str(token)][field][occurrence]
+
+
 def save_index(path: Path, index: Dict):
     with open(path, "w") as f:
         json.dump(index, f, indent=4, sort_keys=True)

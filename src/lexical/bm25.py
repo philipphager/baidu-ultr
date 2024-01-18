@@ -3,6 +3,8 @@ from typing import Dict, List
 
 import numpy as np
 
+from src.lexical.indexer import get_document_frequency
+
 
 class BM25:
     def __init__(
@@ -35,5 +37,5 @@ class BM25:
         return score
 
     def idf(self, token: int):
-        docs = self.index["tokens"][str(token)][self.field]["unique_occurrences"]
+        docs = get_document_frequency(self.index, token, self.field, unique=True)
         return np.log(1 + (self.total_docs - docs + 0.5) / (docs + 0.5))
