@@ -8,6 +8,7 @@ from torch.utils.data import DataLoader
 from tqdm import tqdm
 
 from src.data import BaiduTestDataset, BaiduTrainDataset
+from src.lexical.model import LexicalModel
 from src.util import DatasetWriter
 
 
@@ -57,23 +58,24 @@ def main(config):
         pin_memory=True,
     )
 
-    model = instantiate(config.model, special_tokens=config.tokens.special_tokens)
-    model.load(device)
-    writer = DatasetWriter(
-        half_precision=config.half_precision,
-        min_docs_per_query=config.min_docs_per_query,
-    )
+    bert_model = instantiate(config.model, special_tokens=config.tokens.special_tokens)
+    bert_model.load(device)
+    lexical_model = LexicalModel(config.index_path)
+    writer = DatasetWriter(half_precision=config.half_precision)
 
     for i, batch in tqdm(enumerate(dataset_loader)):
         features, tokens, token_types = batch
 
         with torch.no_grad():
-            query_document_embedding = model(
+            query_document_embedding = bert_model(
                 tokens,
                 token_types,
             )
 
-        assert not query_document_embedding.isnan().any()
+            # Add lexical ranking features, such as BM25, TF-IDF, or QL
+            features = features | lexical_model(features)
+
+        # assert not query_document_embedding.isnan().any()
         writer.add(features, query_document_embedding)
 
     writer.save(out_directory / out_file)

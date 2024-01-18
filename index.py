@@ -10,7 +10,7 @@ from src.lexical.indexer import Indexer, save_index
 def main(config):
     directory = Path(config.data_directory)
     train_files = [f for f in sorted(directory.glob("part-*"))][: config.index_parts]
-    output_path = Path(config.out_directory) / "index.json"
+    output_path = Path(config.index_path)
 
     # Optionally skip documents based on their title
     ignored_titles = [Title.MISSING.value, Title.WHAT_OTHERS_SEARCHED.value]
