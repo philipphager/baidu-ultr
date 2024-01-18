@@ -12,7 +12,7 @@ half_precision: True # Encode features using fp16
 data_type: train # [train, val]
 data_directory: "data/"
 out_directory: "output/"
-index_path: "output/index.json"
+index_path: "models/lexical/index.json"
 
 # Parse train files in chunks, the test set is processed in a single part:
 train_part: 0 # Baidu dataset part: 0 - 1999
