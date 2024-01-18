@@ -199,6 +199,9 @@ class BaiduTestDataset(IterableDataset):
                     "query_id": query_id.decode("utf-8"),
                     "query_md5": md5(query),
                     "text_md5": md5(title + b"\x01" + abstract),
+                    "query": query,
+                    "title": title,
+                    "abstract": abstract,
                     "label": int(label),
                     "frequency_bucket": int(frequency_bucket),
                 }
