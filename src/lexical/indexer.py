@@ -13,9 +13,9 @@ from src.data import split_idx
 
 class Indexer:
     def __init__(
-            self,
-            paths: List[Path],
-            ignored_titles: List,
+        self,
+        paths: List[Path],
+        ignored_titles: List,
     ):
         self.paths = paths
         self.ignored_titles = set(ignored_titles)
