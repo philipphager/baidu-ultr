@@ -51,7 +51,6 @@ class DatasetWriter:
             torch.vstack(self.embeddings).numpy()
         )
         df = pd.DataFrame(self.features)
-        assert df.notna().all()
         df.to_feather(path)
 
 
