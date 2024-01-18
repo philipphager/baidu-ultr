@@ -13,6 +13,7 @@
 
 echo "Model: $1"
 echo "Part: $2"
+echo "Output: $3"
 
 source ${HOME}/.bashrc
 mamba activate baidu-ultr-features
@@ -23,4 +24,4 @@ python main.py \
   train_split_id=$SLURM_ARRAY_TASK_ID \
   model="$1" \
   tokens="$1" \
-  out_directory=output/"$1"
+  out_directory="$3"

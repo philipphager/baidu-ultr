@@ -11,6 +11,8 @@
 #SBATCH --mail-user=p.k.hager@uva.nl
 
 echo "Model: $1"
+echo "Output: $2"
+
 source ${HOME}/.bashrc
 mamba activate baidu-ultr-features
 
@@ -18,4 +20,4 @@ python main.py \
   data_type=val \
   model="$1" \
   tokens="$1" \
-  out_directory=output/"$1"
+  out_directory="$2"
