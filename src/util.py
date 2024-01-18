@@ -39,6 +39,8 @@ class DatasetWriter:
                 "serp_height",
                 "slipoff_count_after_click",
                 "click",
+                "frequency_bucket",
+                "label",
             ]:
                 self.features[k] = list(torch.concat(self.features[k]).numpy())
             else:
