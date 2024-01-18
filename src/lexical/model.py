@@ -22,7 +22,7 @@ class LexicalModel:
         self.ql = QueryLikelihood(index)
         self.ql_jm_short = QueryLikelihood(index, smoothing="jelinek-mercer", alpha=0.1)
         self.ql_jm_long = QueryLikelihood(index, smoothing="jelinek-mercer", alpha=0.7)
-        self.ql_dirichlet = QueryLikelihood(index, smoothing="dirichlet", alpha=256)
+        self.ql_dirichlet = QueryLikelihood(index, smoothing="dirichlet", alpha=128)
 
     def __call__(self, batch) -> Dict[str, List]:
         results = defaultdict(lambda: [])
