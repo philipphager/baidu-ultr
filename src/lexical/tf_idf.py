@@ -3,6 +3,8 @@ from typing import Dict, List
 
 import numpy as np
 
+from src.lexical.indexer import get_document_frequency
+
 
 class TfIdf:
     def __init__(
@@ -34,5 +36,5 @@ class TfIdf:
         return score
 
     def smooth_idf(self, token: int) -> float:
-        docs = self.index["tokens"][str(token)][self.field]["unique_occurrences"]
+        docs = get_document_frequency(self.index, token, self.field, unique=True)
         return np.log((1 + self.total_docs) / (1 + docs))
