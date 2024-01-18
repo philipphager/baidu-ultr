@@ -1,3 +1,3 @@
 _target_: src.model.uva.UvaModel
 model_directory: models/uva/
-model_name: bert-12l-12h-mlm-ctr-500k
+model_name: bert-12l-12h-mlm_ctr-1.5m
