@@ -126,6 +126,7 @@ class BaiduTrainDataset(IterableDataset):
                         click = int(columns[TrainColumns.CLICK])
 
                         features = {
+                            "query_no": query_no,
                             "query_id": query_id.decode("utf-8"),
                             "query_md5": md5(query),
                             "url_md5": url.decode("utf-8"),
@@ -177,11 +178,21 @@ class BaiduTestDataset(IterableDataset):
 
     def __iter__(self):
         stats = defaultdict(lambda: 0)
+        query_no = -1
+        current_query = None
 
         with open(self.path, "rb") as f:
             for i, line in enumerate(f):
                 columns = line.strip(b"\n").split(b"\t")
                 query_id, query, title, abstract, label, frequency_bucket = columns
+
+                if query != current_query:
+                    # As query_ids in the val set are not unique,
+                    # we differentiate queries based on text:
+                    current_query = query
+                    query_no += 1
+                    stats["total_queries"] += 1
+
                 stats["total_docs"] += 1
 
                 if self.drop_missing_docs and title == Title.MISSING.value:
@@ -196,6 +207,7 @@ class BaiduTestDataset(IterableDataset):
                     continue
 
                 features = {
+                    "query_no": query_no,
                     "query_id": query_id.decode("utf-8"),
                     "query_md5": md5(query),
                     "text_md5": md5(title + b"\x01" + abstract),
