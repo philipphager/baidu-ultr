@@ -33,6 +33,7 @@ class DatasetWriter:
     def save(self, path: Path):
         for k, v in self.features.items():
             if k in [
+                "query_no",
                 "position",
                 "media_type",
                 "displayed_time",
