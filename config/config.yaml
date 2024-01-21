@@ -22,7 +22,6 @@ train_queries_per_split: 65_536
 # Preprocessing and filtering:
 drop_missing_docs: True # Remove items with a missing title, marked as "-"
 skip_what_others_searched: True # Remove items with title "What other people searched for"
-min_docs_per_query: 5 # Remove queries with too few documents
 
 # Arguments for creating an index for BM25, TF-IDF features:
 index_parts: 100
