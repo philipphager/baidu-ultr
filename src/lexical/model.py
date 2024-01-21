@@ -35,8 +35,8 @@ class LexicalModel:
             document = title + abstract
 
             results["bm25"].append(self.bm25(query, document))
-            results["title_bm25"].append(self.title_bm25(query, title))
-            results["abstract_bm25"].append(self.abstract_bm25(query, abstract))
+            results["bm25_title"].append(self.title_bm25(query, title))
+            results["bm25_abstract"].append(self.abstract_bm25(query, abstract))
             results["tf_idf"].append(self.tf_idf(query, document))
             results["tf"].append(self.tf(query, document))
             results["idf"].append(self.idf(query, document))
