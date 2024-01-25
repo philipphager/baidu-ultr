@@ -6,7 +6,6 @@ from zipfile import ZipFile
 import pandas as pd
 import torch
 import wget
-from pyarrow import Tensor
 
 from src.const import TOKEN_OFFSET
 from src.data import split_idx
@@ -16,8 +15,10 @@ class DatasetWriter:
     def __init__(
         self,
         half_precision: bool,
+        min_docs_per_query: int,
     ):
         self.half_precision = half_precision
+        self.min_docs_per_query = min_docs_per_query
         self.features = defaultdict(lambda: [])
         self.embeddings = []
 
@@ -54,7 +55,20 @@ class DatasetWriter:
             torch.vstack(self.embeddings).numpy()
         )
         df = pd.DataFrame(self.features)
+        df = self.filter_queries(df)
         df.to_feather(path)
+
+    def filter_queries(self, df):
+        n_queries_before = df["query_no"].nunique()
+        df = df.groupby(["query_no"]).filter(
+            lambda x: len(x) >= self.min_docs_per_query
+        )
+        n_queries_after = df["query_no"].nunique()
+        print(
+            f"Dropped {n_queries_before - n_queries_after} queries",
+            f"with less than {self.min_docs_per_query} docs",
+        )
+        return df
 
 
 def flatten(lists: List[List[Any]]) -> List[Any]:

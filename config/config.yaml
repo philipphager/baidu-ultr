@@ -18,6 +18,7 @@ index_path: "models/lexical/index.json"
 train_part: 0 # Baidu dataset part: 0 - 1999
 train_split_id: 0 # One dataset part typically has 10 splits, each with 65_536 queries
 train_queries_per_split: 65_536
+min_docs_per_query: 5
 
 # Preprocessing and filtering:
 drop_missing_docs: True # Remove items with a missing title, marked as "-"
