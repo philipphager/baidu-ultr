@@ -25,7 +25,7 @@ drop_missing_docs: True # Remove items with a missing title, marked as "-"
 skip_what_others_searched: True # Remove items with title "What other people searched for"
 
 # Arguments for creating an index for BM25, TF-IDF features:
-index_parts: 100
+index_parts: 125
 
 hydra:
   output_subdir: null  # Disable hydra logging
