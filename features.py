@@ -16,7 +16,8 @@ def main(config):
     out_directory = Path(config.out_directory)
 
     parts = out_directory.glob("part-*.feather")
-    parts = [p for p in parts if not p.name.startswith("part-0")]
+    parts = sorted([p for p in parts if not p.name.startswith("part-0")])
+
     dfs = []
 
     for part in tqdm(parts):
