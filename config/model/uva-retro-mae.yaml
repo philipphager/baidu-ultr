@@ -1,3 +1,0 @@
-_target_: src.model.uva.UvaModel
-model_directory: models/uva/
-model_name: bert-12l-12h-retro-mae-1m
